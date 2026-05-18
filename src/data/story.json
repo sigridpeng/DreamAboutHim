@@ -1,0 +1,166 @@
+{
+  "password": "dream",
+  "diaryPages": [
+    {
+      "id": "page-1",
+      "title": "六月十七日",
+      "body": "我又夢見那條沒有盡頭的走廊。牆上的鐘停在 3:07，像是在等某個人回頭。"
+    },
+    {
+      "id": "page-2",
+      "title": "六月十八日",
+      "body": "他說，如果我忘了名字，就去找窗邊那本日記。紙張會記得我不敢承認的事。"
+    },
+    {
+      "id": "page-3",
+      "title": "最後一頁",
+      "body": "墨水滲開的地方浮出一句話：不要問他是誰，問自己為什麼還在等。頁角有一點溫度，好像可以被推開。",
+      "isFinal": true
+    }
+  ],
+  "startNode": "room-awake",
+  "nodes": [
+    {
+      "id": "room-awake",
+      "background": "bedroom",
+      "sprite": "him-shadow",
+      "speaker": "你",
+      "text": "最後一頁在指尖下變得透明。你聽見雨聲從日記裡傳來。",
+      "next": "room-voice"
+    },
+    {
+      "id": "room-voice",
+      "background": "bedroom",
+      "sprite": "him-shadow",
+      "speaker": "他",
+      "text": "你終於找到這裡了。告訴我，你想把夢留下，還是醒來？",
+      "choices": [
+        {
+          "label": "留下，聽他說完",
+          "next": "stay-question",
+          "setFlags": {
+            "stayed": true
+          }
+        },
+        {
+          "label": "後退，尋找出口",
+          "next": "exit-hall",
+          "setFlags": {
+            "searchedExit": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "stay-question",
+      "background": "window",
+      "sprite": "him-soft",
+      "speaker": "他",
+      "text": "那就把那個詞說出來。你一直藏在日記封底的詞。",
+      "keywordRules": [
+        {
+          "keyword": "remember",
+          "next": "memory-open",
+          "setFlags": {
+            "remembered": true
+          }
+        },
+        {
+          "keyword": "醒來",
+          "next": "ending-awake",
+          "setFlags": {
+            "choseAwake": true
+          }
+        }
+      ],
+      "choices": [
+        {
+          "label": "我還沒準備好",
+          "next": "ending-dream"
+        }
+      ]
+    },
+    {
+      "id": "exit-hall",
+      "background": "hallway",
+      "sprite": "him-shadow",
+      "speaker": "你",
+      "text": "走廊盡頭有三扇門。中間那扇門後傳來你的聲音。",
+      "choices": [
+        {
+          "label": "推開中間的門",
+          "next": "truth-door",
+          "setFlags": {
+            "facedTruth": true
+          }
+        },
+        {
+          "label": "回到窗邊",
+          "next": "stay-question"
+        }
+      ]
+    },
+    {
+      "id": "memory-open",
+      "background": "window",
+      "sprite": "him-soft",
+      "speaker": "他",
+      "text": "名字不是鑰匙，記得才是。夢開始褪色，但你沒有失去他。",
+      "next": "ending-remember"
+    },
+    {
+      "id": "truth-door",
+      "background": "hallway",
+      "sprite": "him-soft",
+      "speaker": "你",
+      "text": "門後沒有他，只有你寫滿字的手。你明白這場夢從來不是為了困住你。",
+      "next": "ending-awake"
+    },
+    {
+      "id": "ending-dream",
+      "background": "window",
+      "sprite": "him-shadow",
+      "speaker": "旁白",
+      "text": "你把日記合上，讓雨聲繼續留在紙裡。",
+      "ending": "dream"
+    },
+    {
+      "id": "ending-awake",
+      "background": "bedroom",
+      "speaker": "旁白",
+      "text": "清晨的光落在桌面上。日記還在，但那一頁已經空白。",
+      "ending": "awake"
+    },
+    {
+      "id": "ending-remember",
+      "background": "window",
+      "sprite": "him-soft",
+      "speaker": "旁白",
+      "text": "你在醒來前記住了他的聲音，也記住了自己的選擇。",
+      "ending": "remember"
+    }
+  ],
+  "endings": [
+    {
+      "id": "dream",
+      "title": "結局一：夢中留白",
+      "background": "window",
+      "text": "你選擇留在尚未完成的夢裡。日記最後一頁慢慢闔上，像一次沒有說出口的道別。",
+      "credits": ["企劃：Dream About Him", "劇本：Placeholder", "音樂：Ending Theme Placeholder"]
+    },
+    {
+      "id": "awake",
+      "title": "結局二：醒來以後",
+      "background": "bedroom",
+      "text": "你走出夢境。窗外沒有雨，只有被重新整理過的明天。",
+      "credits": ["導演：Dream About Him", "美術：Placeholder", "測試：You"]
+    },
+    {
+      "id": "remember",
+      "title": "結局三：記得的人",
+      "background": "window",
+      "text": "你沒有把他帶回現實，但你帶回了自己。這一次，日記不再替你保存答案。",
+      "credits": ["製作：Dream About Him", "角色：Him / You", "片尾：To be continued"]
+    }
+  ]
+}
