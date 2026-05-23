@@ -191,7 +191,7 @@ input:focus {
 .diary-cover {
   aspect-ratio: 3 / 4;
   background:
-    url("/DreamAboutHim/assets/diary/cover.png") center / contain no-repeat;
+    url("/DreamAboutHim/assets/diary/cover.webp") center / contain no-repeat;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -413,7 +413,7 @@ p {
 
 .diary-page {
   background:
-    url("/DreamAboutHim/assets/diary/open-book.png") center / contain no-repeat;
+    url("/DreamAboutHim/assets/diary/open-book.webp") center / contain no-repeat;
   border: 0;
   border-radius: 0;
   box-shadow: none;

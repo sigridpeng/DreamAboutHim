@@ -428,7 +428,7 @@ function AppChrome({ variant }: { variant: "menu" | "novel" }) {
   return (
     <>
       <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
-        <img src="/DreamAboutHim/assets/ui/logo.png" alt="" />
+        <img src="/DreamAboutHim/assets/ui/logo.webp" alt="" />
         <span>The Dream of<br />Forgotten Memories</span>
       </div>
       <nav className="top-controls" aria-label="主要控制">
