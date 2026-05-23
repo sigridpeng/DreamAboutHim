@@ -139,6 +139,17 @@ input:focus {
   width: 58px;
 }
 
+.top-controls > button.is-active {
+  background: rgba(80, 91, 151, 0.86);
+  box-shadow:
+    0 0 20px rgba(247, 211, 146, 0.34),
+    0 8px 30px rgba(0, 0, 0, 0.24);
+}
+
+.top-controls > button.is-muted {
+  opacity: 0.62;
+}
+
 .top-controls .profile-pill {
   aspect-ratio: auto;
   border-radius: 999px;

@@ -16,15 +16,17 @@ import {
   SkipForward,
   Upload,
   UserRound,
+  VolumeX,
   Volume2,
   X,
 } from "lucide-react";
 import { story } from "./data";
 import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
+const BGM_SRC = "/DreamAboutHim/assets/audio/bgm-placeholder.wav";
 
 function App() {
   const [stage, setStage] = useState<GameStage>("cover");
@@ -40,11 +42,43 @@ function App() {
   const [keyword, setKeyword] = useState("");
   const [keywordError, setKeywordError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [isBgmPlaying, setIsBgmPlaying] = useState(false);
+  const [isBgmMuted, setIsBgmMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const nodesById = useMemo(() => new Map(story.nodes.map((node) => [node.id, node])), []);
   const endingsById = useMemo(() => new Map(story.endings.map((ending) => [ending.id, ending])), []);
   const currentNode = nodesById.get(nodeId) ?? nodesById.get(story.startNode);
   const currentEnding = currentNode?.ending ? endingsById.get(currentNode.ending) : undefined;
+
+  async function toggleBgm() {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio.volume = isBgmMuted ? 0 : 0.38;
+      try {
+        await audio.play();
+        setIsBgmPlaying(true);
+      } catch {
+        setIsBgmPlaying(false);
+      }
+      return;
+    }
+
+    audio.pause();
+    setIsBgmPlaying(false);
+  }
+
+  function toggleBgmMute() {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const nextMuted = !isBgmMuted;
+    audio.muted = nextMuted;
+    audio.volume = nextMuted ? 0 : 0.38;
+    setIsBgmMuted(nextMuted);
+  }
 
   function submitPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -174,9 +208,16 @@ function App() {
 
   return (
     <main className={`app stage-${stage}`}>
+      <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
       {stage === "cover" && (
         <section className={`cover-screen ${isUnlocking ? "unlocking" : ""}`}>
-          <AppChrome variant="menu" />
+          <AppChrome
+            variant="menu"
+            isBgmPlaying={isBgmPlaying}
+            isBgmMuted={isBgmMuted}
+            onToggleBgm={toggleBgm}
+            onToggleBgmMute={toggleBgmMute}
+          />
           <div className="diary-cover" aria-label="Dream About Him 日記本封面">
             <div className="cover-title">
               <p className="cover-kicker">Dream of</p>
@@ -232,7 +273,13 @@ function App() {
 
       {stage === "diary" && (
         <section className="diary-screen">
-          <AppChrome variant="menu" />
+          <AppChrome
+            variant="menu"
+            isBgmPlaying={isBgmPlaying}
+            isBgmMuted={isBgmMuted}
+            onToggleBgm={toggleBgm}
+            onToggleBgmMute={toggleBgmMute}
+          />
           <button className="diary-index" type="button">
             <PenLine size={20} />
             Diary Index
@@ -306,6 +353,10 @@ function App() {
           onSave={saveGame}
           onLoad={loadGame}
           onRestart={restart}
+          isBgmPlaying={isBgmPlaying}
+          isBgmMuted={isBgmMuted}
+          onToggleBgm={toggleBgm}
+          onToggleBgmMute={toggleBgmMute}
         />
       )}
 
@@ -329,6 +380,10 @@ interface NovelScreenProps {
   onSave: () => void;
   onLoad: () => void;
   onRestart: () => void;
+  isBgmPlaying: boolean;
+  isBgmMuted: boolean;
+  onToggleBgm: () => void;
+  onToggleBgmMute: () => void;
 }
 
 function NovelScreen({
@@ -344,10 +399,20 @@ function NovelScreen({
   onSave,
   onLoad,
   onRestart,
+  isBgmPlaying,
+  isBgmMuted,
+  onToggleBgm,
+  onToggleBgmMute,
 }: NovelScreenProps) {
   return (
     <section className={`novel-screen bg-${node.background}`}>
-      <AppChrome variant="novel" />
+      <AppChrome
+        variant="novel"
+        isBgmPlaying={isBgmPlaying}
+        isBgmMuted={isBgmMuted}
+        onToggleBgm={onToggleBgm}
+        onToggleBgmMute={onToggleBgmMute}
+      />
       <header className="vn-toolbar">
         <button className="tool-button" type="button" onClick={onSave}>
           <Save size={17} />
@@ -424,7 +489,15 @@ function NovelScreen({
   );
 }
 
-function AppChrome({ variant }: { variant: "menu" | "novel" }) {
+interface AppChromeProps {
+  variant: "menu" | "novel";
+  isBgmPlaying: boolean;
+  isBgmMuted: boolean;
+  onToggleBgm: () => void;
+  onToggleBgmMute: () => void;
+}
+
+function AppChrome({ variant, isBgmPlaying, isBgmMuted, onToggleBgm, onToggleBgmMute }: AppChromeProps) {
   return (
     <>
       <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
@@ -432,11 +505,21 @@ function AppChrome({ variant }: { variant: "menu" | "novel" }) {
         <span>The Dream of<br />Forgotten Memories</span>
       </div>
       <nav className="top-controls" aria-label="主要控制">
-        <button type="button" aria-label="音樂">
+        <button
+          className={isBgmPlaying ? "is-active" : ""}
+          type="button"
+          onClick={onToggleBgm}
+          aria-label={isBgmPlaying ? "暫停背景音樂" : "播放背景音樂"}
+        >
           <Music size={22} />
         </button>
-        <button type="button" aria-label="音量">
-          <Volume2 size={22} />
+        <button
+          className={isBgmMuted ? "is-muted" : ""}
+          type="button"
+          onClick={onToggleBgmMute}
+          aria-label={isBgmMuted ? "解除靜音" : "靜音"}
+        >
+          {isBgmMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
         </button>
         <button className="profile-pill" type="button" aria-label="訪客資料">
           <UserRound size={22} />
