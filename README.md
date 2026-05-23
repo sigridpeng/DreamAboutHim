@@ -33,10 +33,10 @@ Build 結果會輸出到 `dist/`。目前 `vite.config.ts` 的 base path 設為 
 
 ## Assets
 
-背景音樂 placeholder 位於：
+目前背景音樂位於：
 
 ```text
-public/assets/audio/bgm-placeholder.wav
+public/assets/bgm/Your Name in Steam.mp3
 ```
 
 之後可以直接用同名音檔替換，或在 `src/main.tsx` 修改 `BGM_SRC` 指向新的音樂路徑。瀏覽器需要玩家互動後才能播放音樂，所以音樂會從右上角音樂按鈕啟動。

@@ -25,7 +25,28 @@ import "./styles.css";
 import { useMemo, useRef, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
-const BGM_SRC = "/DreamAboutHim/assets/audio/bgm-placeholder.wav";
+const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
+
+const characterSprites: Record<string, Record<string, string>> = {
+  protagonist: {
+    neutral: "blue/blue-normal.webp",
+    soft: "blue/blue-sayhi.webp",
+    sad: "blue/blue-shy.webp",
+    surprised: "blue/blue-hold.webp",
+  },
+  him: {
+    neutral: "white/white-normal.webp",
+    soft: "white/white-smile.webp",
+    sad: "white/white-humph.webp",
+    surprised: "white/white-thumbup.webp",
+  },
+  friend: {
+    neutral: "yellow/yellow-dressed-normal.webp",
+    soft: "yellow/yellow-dressed-smile.webp",
+    sad: "yellow/yellow-dressed-shy.webp",
+    surprised: "yellow/yellow-dressed-stare.webp",
+  },
+};
 
 function App() {
   const [stage, setStage] = useState<GameStage>("cover");
@@ -589,8 +610,12 @@ function AppChrome({ variant, isBgmPlaying, isBgmMuted, onToggleBgm, onToggleBgm
 }
 
 function CharacterSprite({ character }: { character: SceneCharacter }) {
+  const expressionSprites = characterSprites[character.id];
+  const spritePath = expressionSprites?.[character.expression] ?? expressionSprites?.neutral;
+
   return (
     <div
+      style={spritePath ? { "--sprite-image": `url("/DreamAboutHim/assets/role/${spritePath}")` } as React.CSSProperties : undefined}
       className={[
         "character-sprite",
         `character-${character.id}`,
