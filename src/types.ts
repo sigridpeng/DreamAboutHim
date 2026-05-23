@@ -1,4 +1,4 @@
-export type GameStage = "password" | "diary" | "visualNovel" | "ending";
+export type GameStage = "cover" | "diary" | "visualNovel" | "ending";
 
 export type FlagMap = Record<string, boolean>;
 
@@ -6,7 +6,20 @@ export interface DiaryPage {
   id: string;
   title: string;
   body: string;
+  entryImage?: string;
+  entryLabel?: string;
+  isEntryPage?: boolean;
   isFinal?: boolean;
+}
+
+export type CharacterPosition = "left" | "center" | "right";
+
+export interface SceneCharacter {
+  id: string;
+  name: string;
+  position: CharacterPosition;
+  expression: "neutral" | "soft" | "sad" | "surprised";
+  active?: boolean;
 }
 
 export interface Choice {
@@ -24,7 +37,7 @@ export interface KeywordRule {
 export interface VNNode {
   id: string;
   background: string;
-  sprite?: string;
+  characters?: SceneCharacter[];
   speaker?: string;
   text: string;
   next?: string;

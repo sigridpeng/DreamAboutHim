@@ -1,15 +1,36 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BookOpen, ChevronLeft, ChevronRight, RotateCcw, Save, Upload } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Image,
+  Images,
+  LockKeyhole,
+  Music,
+  PenLine,
+  PlayCircle,
+  RotateCcw,
+  Save,
+  Settings,
+  SkipForward,
+  Upload,
+  UserRound,
+  Volume2,
+  X,
+} from "lucide-react";
 import { story } from "./data";
-import type { Ending, FlagMap, GameStage, SaveData, VNNode } from "./types";
+import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
 import { useMemo, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
 
 function App() {
-  const [stage, setStage] = useState<GameStage>("password");
+  const [stage, setStage] = useState<GameStage>("cover");
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [isMemoryTransitioning, setIsMemoryTransitioning] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
@@ -28,8 +49,13 @@ function App() {
   function submitPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (password.trim() === story.password) {
-      setStage("diary");
       setPasswordError("");
+      setIsUnlocking(true);
+      window.setTimeout(() => {
+        setIsPasswordOpen(false);
+        setIsUnlocking(false);
+        setStage("diary");
+      }, 900);
       return;
     }
 
@@ -37,25 +63,33 @@ function App() {
   }
 
   function enterVisualNovel() {
-    setStage("visualNovel");
-    setNodeId(story.startNode);
-    setKeyword("");
-    setKeywordError("");
+    setIsMemoryTransitioning(true);
+    window.setTimeout(() => {
+      setStage("visualNovel");
+      setNodeId(story.startNode);
+      setKeyword("");
+      setKeywordError("");
+      setIsMemoryTransitioning(false);
+    }, 700);
   }
 
-  function mergeFlags(nextFlags?: FlagMap) {
-    if (!nextFlags) return;
-    setFlags((current) => ({ ...current, ...nextFlags }));
+  function resolveEndingId(nextFlags: FlagMap) {
+    if (nextFlags.keywordBFound) return "ending-promise";
+    if (nextFlags.keywordAFound) return "ending-clear-memory";
+    return "ending-faint-memory";
   }
 
   function goToNode(nextId?: string, nextFlags?: FlagMap) {
     if (!nextId) return;
-    mergeFlags(nextFlags);
+    const effectiveFlags = { ...flags, ...(nextFlags ?? {}) };
+    setFlags(effectiveFlags);
     setKeyword("");
     setKeywordError("");
-    setNodeId(nextId);
 
-    const nextNode = nodesById.get(nextId);
+    const resolvedNextId = nextId === "resolve-ending" ? resolveEndingId(effectiveFlags) : nextId;
+    setNodeId(resolvedNextId);
+
+    const nextNode = nodesById.get(resolvedNextId);
     const endingId = nextNode?.ending;
     if (endingId) {
       setUnlockedEndings((current) =>
@@ -124,7 +158,10 @@ function App() {
   }
 
   function restart() {
-    setStage("password");
+    setStage("cover");
+    setIsPasswordOpen(false);
+    setIsUnlocking(false);
+    setIsMemoryTransitioning(false);
     setPassword("");
     setPasswordError("");
     setPageIndex(0);
@@ -137,32 +174,69 @@ function App() {
 
   return (
     <main className={`app stage-${stage}`}>
-      {stage === "password" && (
-        <section className="gate-screen">
-          <div className="gate-panel">
-            <p className="eyebrow">Dream About Him</p>
-            <h1>鎖住的日記</h1>
-            <form onSubmit={submitPassword} className="password-form">
-              <label htmlFor="password">輸入密碼</label>
-              <div className="inline-control">
-                <input
-                  id="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="試試 dream"
-                  type="password"
-                  autoComplete="off"
-                />
-                <button type="submit">打開</button>
-              </div>
-              {passwordError && <p className="error-text">{passwordError}</p>}
-            </form>
+      {stage === "cover" && (
+        <section className={`cover-screen ${isUnlocking ? "unlocking" : ""}`}>
+          <AppChrome variant="menu" />
+          <div className="diary-cover" aria-label="Dream About Him 日記本封面">
+            <div className="cover-title">
+              <p className="cover-kicker">Dream of</p>
+              <h1>Forgotten Memories</h1>
+            </div>
+            <p className="cover-subtitle">那些還沒有被想起的事，都被鎖在這裡。</p>
+            <button className="lock-button" type="button" onClick={() => setIsPasswordOpen(true)} aria-label="打開日記鎖">
+              <LockKeyhole size={32} />
+            </button>
+            <div className="password-hint">
+              <strong>Enter Password</strong>
+              <span>Click the lock to enter your password</span>
+            </div>
           </div>
+
+          {isPasswordOpen && (
+            <div className="modal-backdrop" role="presentation">
+              <section className="password-modal" role="dialog" aria-modal="true" aria-labelledby="password-title">
+                <button
+                  className="modal-close"
+                  type="button"
+                  onClick={() => {
+                    setIsPasswordOpen(false);
+                    setPasswordError("");
+                  }}
+                  aria-label="關閉密碼視窗"
+                >
+                  <X size={18} />
+                </button>
+                <p className="eyebrow">Locked Diary</p>
+                <h2 id="password-title">輸入密碼</h2>
+                <form onSubmit={submitPassword} className="password-form">
+                  <label htmlFor="password">密碼</label>
+                  <div className="inline-control">
+                    <input
+                      id="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="試試 dream"
+                      type="password"
+                      autoComplete="off"
+                      autoFocus
+                    />
+                    <button type="submit">打開</button>
+                  </div>
+                  {passwordError && <p className="error-text">{passwordError}</p>}
+                </form>
+              </section>
+            </div>
+          )}
         </section>
       )}
 
       {stage === "diary" && (
         <section className="diary-screen">
+          <AppChrome variant="menu" />
+          <button className="diary-index" type="button">
+            <PenLine size={20} />
+            Diary Index
+          </button>
           <div className="diary-shell">
             <header className="topbar">
               <div>
@@ -175,13 +249,22 @@ function App() {
             </header>
 
             <article
-              className={`diary-page ${story.diaryPages[pageIndex].isFinal ? "final-page" : ""}`}
-              onClick={story.diaryPages[pageIndex].isFinal ? enterVisualNovel : undefined}
+              className={`diary-page ${story.diaryPages[pageIndex].isEntryPage ? "entry-page" : ""}`}
             >
               <BookOpen className="page-mark" size={28} />
               <h2>{story.diaryPages[pageIndex].title}</h2>
               <p>{story.diaryPages[pageIndex].body}</p>
-              {story.diaryPages[pageIndex].isFinal && <span className="page-cta">觸碰頁角</span>}
+              {story.diaryPages[pageIndex].isEntryPage && (
+                <button
+                  className={`memory-photo ${isMemoryTransitioning ? "memory-opening" : ""}`}
+                  type="button"
+                  onClick={enterVisualNovel}
+                  aria-label={story.diaryPages[pageIndex].entryLabel}
+                >
+                  <Image size={28} />
+                  <span>褪色照片</span>
+                </button>
+              )}
             </article>
 
             <footer className="diary-controls">
@@ -264,6 +347,7 @@ function NovelScreen({
 }: NovelScreenProps) {
   return (
     <section className={`novel-screen bg-${node.background}`}>
+      <AppChrome variant="novel" />
       <header className="vn-toolbar">
         <button className="tool-button" type="button" onClick={onSave}>
           <Save size={17} />
@@ -278,7 +362,11 @@ function NovelScreen({
         </button>
       </header>
 
-      <div className={`sprite ${node.sprite ? `sprite-${node.sprite}` : "sprite-empty"}`} aria-hidden="true" />
+      <div className="character-stage" aria-hidden="true">
+        {node.characters?.map((character) => (
+          <CharacterSprite key={`${character.position}-${character.id}`} character={character} />
+        ))}
+      </div>
 
       <section className="dialogue-box">
         <div className="speaker-row">
@@ -318,7 +406,72 @@ function NovelScreen({
         )}
         <div className="flag-line">{Object.keys(flags).length ? `已記錄：${Object.keys(flags).join(" / ")}` : "尚未做出選擇"}</div>
       </section>
+      <div className="vn-bottom-tools">
+        <button type="button">
+          <PenLine size={18} />
+          Log
+        </button>
+        <button type="button">
+          <PlayCircle size={18} />
+          Auto
+        </button>
+        <button type="button">
+          <SkipForward size={18} />
+          Skip
+        </button>
+      </div>
     </section>
+  );
+}
+
+function AppChrome({ variant }: { variant: "menu" | "novel" }) {
+  return (
+    <>
+      <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
+        <img src="/DreamAboutHim/assets/ui/logo.png" alt="" />
+        <span>The Dream of<br />Forgotten Memories</span>
+      </div>
+      <nav className="top-controls" aria-label="主要控制">
+        <button type="button" aria-label="音樂">
+          <Music size={22} />
+        </button>
+        <button type="button" aria-label="音量">
+          <Volume2 size={22} />
+        </button>
+        <button className="profile-pill" type="button" aria-label="訪客資料">
+          <UserRound size={22} />
+          <span>Visitor<br />Guest</span>
+        </button>
+      </nav>
+      {variant === "menu" && (
+        <aside className="side-actions" aria-label="側邊選單">
+          <button type="button">
+            <Settings size={22} />
+            Settings
+          </button>
+          <button type="button">
+            <Images size={22} />
+            Gallery
+          </button>
+        </aside>
+      )}
+    </>
+  );
+}
+
+function CharacterSprite({ character }: { character: SceneCharacter }) {
+  return (
+    <div
+      className={[
+        "character-sprite",
+        `character-${character.id}`,
+        `position-${character.position}`,
+        `expression-${character.expression}`,
+        character.active ? "active" : "inactive",
+      ].join(" ")}
+    >
+      <span>{character.name}</span>
+    </div>
   );
 }
 
@@ -332,14 +485,14 @@ interface EndingScreenProps {
 function EndingScreen({ ending, unlockedEndings, onRestart, onLoad }: EndingScreenProps) {
   return (
     <section className={`ending-screen bg-${ending.background}`}>
+      <div className="ending-movie" aria-label="全螢幕片尾影片佔位">
+        <div className="film-grain" />
+        <span>Ending Movie Placeholder</span>
+      </div>
       <div className="credits-projector">
         <p className="eyebrow">Ending</p>
         <h1>{ending.title}</h1>
         <p>{ending.text}</p>
-        <div className="projector-frame" aria-label="片尾影片佔位">
-          <div className="scanline" />
-          <span>Ending Movie Placeholder</span>
-        </div>
         <ul>
           {ending.credits.map((credit) => (
             <li key={credit}>{credit}</li>

@@ -4,18 +4,20 @@
     {
       "id": "page-1",
       "title": "六月十七日",
-      "body": "我又夢見那條沒有盡頭的走廊。牆上的鐘停在 3:07，像是在等某個人回頭。"
+      "body": "我又夢見那條沒有盡頭的走廊。牆上的鐘停在 3:07，像是在等某個人回頭。桌上那本舊日記的鎖扣，摸起來比夢裡的雨還冷。"
     },
     {
       "id": "page-2",
       "title": "六月十八日",
-      "body": "他說，如果我忘了名字，就去找窗邊那本日記。紙張會記得我不敢承認的事。"
+      "body": "他說，如果我忘了名字，就去找窗邊那本日記。紙張會記得我不敢承認的事。友人說我只是太累，可我知道那不是普通的夢。"
     },
     {
       "id": "page-3",
       "title": "最後一頁",
-      "body": "墨水滲開的地方浮出一句話：不要問他是誰，問自己為什麼還在等。頁角有一點溫度，好像可以被推開。",
-      "isFinal": true
+      "body": "墨水滲開的地方浮出一句話：不要問他是誰，問自己為什麼還在等。頁面中央夾著一張褪色照片，背面只留下兩個字的痕跡。",
+      "entryImage": "memory-photo",
+      "entryLabel": "點擊褪色照片，進入最後一頁的記憶",
+      "isEntryPage": true
     }
   ],
   "startNode": "room-awake",
@@ -23,144 +25,260 @@
     {
       "id": "room-awake",
       "background": "bedroom",
-      "sprite": "him-shadow",
+      "characters": [
+        {
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "neutral",
+          "active": true
+        },
+        {
+          "id": "him",
+          "name": "他",
+          "position": "center",
+          "expression": "soft"
+        }
+      ],
       "speaker": "你",
-      "text": "最後一頁在指尖下變得透明。你聽見雨聲從日記裡傳來。",
-      "next": "room-voice"
+      "text": "照片在指尖下變得透明。你聽見雨聲從日記裡傳來，而他的輪廓站在窗邊。",
+      "next": "friend-warning"
     },
     {
-      "id": "room-voice",
+      "id": "friend-warning",
       "background": "bedroom",
-      "sprite": "him-shadow",
-      "speaker": "他",
-      "text": "你終於找到這裡了。告訴我，你想把夢留下，還是醒來？",
+      "characters": [
+        {
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "surprised"
+        },
+        {
+          "id": "him",
+          "name": "他",
+          "position": "center",
+          "expression": "neutral"
+        },
+        {
+          "id": "friend",
+          "name": "友人",
+          "position": "right",
+          "expression": "sad",
+          "active": true
+        }
+      ],
+      "speaker": "友人",
+      "text": "如果你真的要往裡走，就別只相信他說的話。日記裡的線索，是你自己留下的。",
       "choices": [
         {
-          "label": "留下，聽他說完",
-          "next": "stay-question",
+          "label": "聽友人說完",
+          "next": "keyword-a",
           "setFlags": {
-            "stayed": true
+            "trustedFriend": true
           }
         },
         {
-          "label": "後退，尋找出口",
-          "next": "exit-hall",
+          "label": "先追上他",
+          "next": "him-question",
           "setFlags": {
-            "searchedExit": true
+            "followedHim": true
           }
         }
       ]
     },
     {
-      "id": "stay-question",
+      "id": "keyword-a",
       "background": "window",
-      "sprite": "him-soft",
-      "speaker": "他",
-      "text": "那就把那個詞說出來。你一直藏在日記封底的詞。",
-      "keywordRules": [
+      "characters": [
         {
-          "keyword": "remember",
-          "next": "memory-open",
-          "setFlags": {
-            "remembered": true
-          }
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "neutral"
         },
         {
-          "keyword": "醒來",
-          "next": "ending-awake",
+          "id": "friend",
+          "name": "友人",
+          "position": "right",
+          "expression": "soft",
+          "active": true
+        }
+      ],
+      "speaker": "友人",
+      "text": "第一個線索在日記第二頁：紙張會替你保存什麼？如果想起來，就輸入那個詞。",
+      "keywordRules": [
+        {
+          "keyword": "記得",
+          "next": "him-question",
           "setFlags": {
-            "choseAwake": true
+            "keywordAFound": true
           }
         }
       ],
       "choices": [
         {
-          "label": "我還沒準備好",
-          "next": "ending-dream"
+          "label": "暫時想不起來",
+          "next": "him-question"
         }
       ]
     },
     {
-      "id": "exit-hall",
-      "background": "hallway",
-      "sprite": "him-shadow",
-      "speaker": "你",
-      "text": "走廊盡頭有三扇門。中間那扇門後傳來你的聲音。",
+      "id": "him-question",
+      "background": "window",
+      "characters": [
+        {
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "neutral"
+        },
+        {
+          "id": "him",
+          "name": "他",
+          "position": "center",
+          "expression": "soft",
+          "active": true
+        },
+        {
+          "id": "friend",
+          "name": "友人",
+          "position": "right",
+          "expression": "sad"
+        }
+      ],
+      "speaker": "他",
+      "text": "你終於找到這裡了。那張照片背面的字，不是名字，是我們曾經說好的事。",
       "choices": [
         {
-          "label": "推開中間的門",
-          "next": "truth-door",
+          "label": "問他照片背面寫了什麼",
+          "next": "keyword-b",
           "setFlags": {
-            "facedTruth": true
+            "askedPromise": true
           }
         },
         {
-          "label": "回到窗邊",
-          "next": "stay-question"
+          "label": "說自己只想醒來",
+          "next": "resolve-ending",
+          "setFlags": {
+            "wantedAwake": true
+          }
         }
       ]
     },
     {
-      "id": "memory-open",
-      "background": "window",
-      "sprite": "him-soft",
-      "speaker": "他",
-      "text": "名字不是鑰匙，記得才是。夢開始褪色，但你沒有失去他。",
-      "next": "ending-remember"
-    },
-    {
-      "id": "truth-door",
+      "id": "keyword-b",
       "background": "hallway",
-      "sprite": "him-soft",
+      "characters": [
+        {
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "surprised",
+          "active": true
+        },
+        {
+          "id": "him",
+          "name": "他",
+          "position": "center",
+          "expression": "sad"
+        },
+        {
+          "id": "friend",
+          "name": "友人",
+          "position": "right",
+          "expression": "neutral"
+        }
+      ],
       "speaker": "你",
-      "text": "門後沒有他，只有你寫滿字的手。你明白這場夢從來不是為了困住你。",
-      "next": "ending-awake"
+      "text": "照片背面的兩個字被雨水沖淡，只剩下起筆和收尾。你知道那是你們之間最重要的詞。",
+      "keywordRules": [
+        {
+          "keyword": "約定",
+          "next": "promise-open",
+          "setFlags": {
+            "keywordBFound": true
+          }
+        }
+      ],
+      "choices": [
+        {
+          "label": "把照片收起來",
+          "next": "resolve-ending"
+        }
+      ]
     },
     {
-      "id": "ending-dream",
+      "id": "promise-open",
+      "background": "hallway",
+      "characters": [
+        {
+          "id": "protagonist",
+          "name": "你",
+          "position": "left",
+          "expression": "soft"
+        },
+        {
+          "id": "him",
+          "name": "他",
+          "position": "center",
+          "expression": "soft",
+          "active": true
+        },
+        {
+          "id": "friend",
+          "name": "友人",
+          "position": "right",
+          "expression": "soft"
+        }
+      ],
+      "speaker": "他",
+      "text": "對。不是要你留下，也不是要你忘記。我們約定過，要在想起來的那一天好好道別。",
+      "next": "resolve-ending"
+    },
+    {
+      "id": "ending-faint-memory",
       "background": "window",
-      "sprite": "him-shadow",
       "speaker": "旁白",
-      "text": "你把日記合上，讓雨聲繼續留在紙裡。",
-      "ending": "dream"
+      "text": "你把照片放回日記裡。夢沒有給你答案，只留下一點溫柔的輪廓。",
+      "ending": "faint-memory"
     },
     {
-      "id": "ending-awake",
+      "id": "ending-clear-memory",
       "background": "bedroom",
       "speaker": "旁白",
-      "text": "清晨的光落在桌面上。日記還在，但那一頁已經空白。",
-      "ending": "awake"
+      "text": "你終於想起那不是普通的夢。回憶仍然模糊，卻開始有了聲音和光。",
+      "ending": "clear-memory"
     },
     {
-      "id": "ending-remember",
+      "id": "ending-promise",
       "background": "window",
-      "sprite": "him-soft",
       "speaker": "旁白",
-      "text": "你在醒來前記住了他的聲音，也記住了自己的選擇。",
-      "ending": "remember"
+      "text": "你們完成了那個約定。醒來時，日記最後一頁不再是空白。",
+      "ending": "promise"
     }
   ],
   "endings": [
     {
-      "id": "dream",
-      "title": "結局一：夢中留白",
+      "id": "faint-memory",
+      "title": "結局一：淡淡的回憶",
       "background": "window",
-      "text": "你選擇留在尚未完成的夢裡。日記最後一頁慢慢闔上，像一次沒有說出口的道別。",
-      "credits": ["企劃：Dream About Him", "劇本：Placeholder", "音樂：Ending Theme Placeholder"]
+      "text": "沒有找到關鍵字時，回憶只像雨後紙頁上的水痕，淡淡存在，卻還不能被讀懂。",
+      "credits": ["企劃：Dream About Him", "結局：淡淡的回憶", "片尾影片：Placeholder"]
     },
     {
-      "id": "awake",
-      "title": "結局二：醒來以後",
+      "id": "clear-memory",
+      "title": "結局二：逐漸清晰的回憶",
       "background": "bedroom",
-      "text": "你走出夢境。窗外沒有雨，只有被重新整理過的明天。",
-      "credits": ["導演：Dream About Him", "美術：Placeholder", "測試：You"]
+      "text": "輸入關鍵字 A 後，夢的碎片開始連成一句話。你還沒抵達全部真相，但已經不再害怕想起。",
+      "credits": ["企劃：Dream About Him", "結局：逐漸清晰的回憶", "片尾影片：Placeholder"]
     },
     {
-      "id": "remember",
-      "title": "結局三：記得的人",
+      "id": "promise",
+      "title": "結局三：我們的約定",
       "background": "window",
-      "text": "你沒有把他帶回現實，但你帶回了自己。這一次，日記不再替你保存答案。",
-      "credits": ["製作：Dream About Him", "角色：Him / You", "片尾：To be continued"]
+      "text": "輸入關鍵字 B 後，你想起了約定的完整形狀。這次不是被夢困住，而是選擇好好告別。",
+      "credits": ["企劃：Dream About Him", "結局：我們的約定", "片尾影片：Placeholder"]
     }
   ]
 }

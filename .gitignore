@@ -1,5 +1,6 @@
 node_modules/
 dist/
+pic/
 
 .DS_Store
 *.local
