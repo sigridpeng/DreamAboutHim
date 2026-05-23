@@ -1,4 +1,4 @@
-export type GameStage = "cover" | "diary" | "visualNovel" | "ending";
+export type GameStage = "cover" | "nameEntry" | "diary" | "visualNovel" | "ending";
 
 export type FlagMap = Record<string, boolean>;
 

@@ -67,6 +67,7 @@ input:focus {
 }
 
 .cover-screen,
+.name-screen,
 .diary-screen,
 .novel-screen,
 .ending-screen {
@@ -76,6 +77,7 @@ input:focus {
 }
 
 .cover-screen::after,
+.name-screen::after,
 .diary-screen::after,
 .novel-screen::after,
 .ending-screen::after {
@@ -197,6 +199,42 @@ input:focus {
   justify-content: center;
   padding: 28px;
   perspective: 1200px;
+}
+
+.name-screen {
+  align-items: center;
+  background:
+    linear-gradient(rgba(8, 13, 34, 0.2), rgba(8, 13, 34, 0.5)),
+    radial-gradient(circle at 18% 56%, rgba(255, 151, 78, 0.7), transparent 25%),
+    linear-gradient(150deg, #1b2954 0%, #182242 42%, #5f3045 62%, #d88a58 100%);
+  display: flex;
+  justify-content: center;
+  padding: 28px;
+}
+
+.name-card {
+  background:
+    linear-gradient(rgba(255, 249, 236, 0.08), transparent),
+    rgba(27, 32, 70, 0.9);
+  border: 1px solid rgba(247, 211, 146, 0.56);
+  border-radius: 16px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.38);
+  max-width: 520px;
+  padding: clamp(28px, 5vw, 48px);
+  width: min(100%, 520px);
+}
+
+.name-card h1 {
+  color: #f7dfad;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+
+.name-card > p {
+  color: rgba(255, 239, 214, 0.78);
+  line-height: 1.8;
 }
 
 .diary-cover {

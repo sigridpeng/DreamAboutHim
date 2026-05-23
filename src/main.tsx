@@ -15,7 +15,6 @@ import {
   Settings,
   SkipForward,
   Upload,
-  UserRound,
   VolumeX,
   Volume2,
   X,
@@ -35,6 +34,9 @@ function App() {
   const [isMemoryTransitioning, setIsMemoryTransitioning] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameError, setNameError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
@@ -88,7 +90,7 @@ function App() {
       window.setTimeout(() => {
         setIsPasswordOpen(false);
         setIsUnlocking(false);
-        setStage("diary");
+        setStage("nameEntry");
       }, 900);
       return;
     }
@@ -198,12 +200,28 @@ function App() {
     setIsMemoryTransitioning(false);
     setPassword("");
     setPasswordError("");
+    setPlayerName("");
+    setNameDraft("");
+    setNameError("");
     setPageIndex(0);
     setNodeId(story.startNode);
     setFlags({});
     setKeyword("");
     setKeywordError("");
     setSaveMessage("");
+  }
+
+  function submitPlayerName(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextName = nameDraft.trim();
+    if (!nextName) {
+      setNameError("請輸入玩家名字。");
+      return;
+    }
+
+    setPlayerName(nextName);
+    setNameError("");
+    setStage("diary");
   }
 
   return (
@@ -268,6 +286,38 @@ function App() {
               </section>
             </div>
           )}
+        </section>
+      )}
+
+      {stage === "nameEntry" && (
+        <section className="name-screen">
+          <AppChrome
+            variant="menu"
+            isBgmPlaying={isBgmPlaying}
+            isBgmMuted={isBgmMuted}
+            onToggleBgm={toggleBgm}
+            onToggleBgmMute={toggleBgmMute}
+          />
+          <section className="name-card" aria-labelledby="name-title">
+            <p className="eyebrow">Before Opening</p>
+            <h1 id="name-title">留下你的名字</h1>
+            <p>日記需要知道正在翻閱它的人是誰。</p>
+            <form onSubmit={submitPlayerName} className="password-form">
+              <label htmlFor="player-name">玩家名字</label>
+              <div className="inline-control">
+                <input
+                  id="player-name"
+                  value={nameDraft}
+                  onChange={(event) => setNameDraft(event.target.value)}
+                  placeholder="輸入名字"
+                  autoComplete="off"
+                  autoFocus
+                />
+                <button type="submit">繼續</button>
+              </div>
+              {nameError && <p className="error-text">{nameError}</p>}
+            </form>
+          </section>
         </section>
       )}
 
@@ -520,10 +570,6 @@ function AppChrome({ variant, isBgmPlaying, isBgmMuted, onToggleBgm, onToggleBgm
           aria-label={isBgmMuted ? "解除靜音" : "靜音"}
         >
           {isBgmMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
-        </button>
-        <button className="profile-pill" type="button" aria-label="訪客資料">
-          <UserRound size={22} />
-          <span>Visitor<br />Guest</span>
         </button>
       </nav>
       {variant === "menu" && (
