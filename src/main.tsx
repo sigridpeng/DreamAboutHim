@@ -21,9 +21,10 @@ import {
 import { story } from "./data";
 import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
+const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
 
 const characterSprites: Record<string, Record<string, string>> = {
@@ -47,7 +48,29 @@ const characterSprites: Record<string, Record<string, string>> = {
   },
 };
 
+const imageAssets = [
+  `${ASSET_BASE}/ui/logo.webp`,
+  `${ASSET_BASE}/diary/cover.webp`,
+  `${ASSET_BASE}/diary/open-book.webp`,
+  `${ASSET_BASE}/diary/page.webp`,
+  `${ASSET_BASE}/bg/cafe.png`,
+  `${ASSET_BASE}/bg/bookstore.png`,
+  ...Object.values(characterSprites).flatMap((expressions) =>
+    Object.values(expressions).map((spritePath) => `${ASSET_BASE}/role/${spritePath}`),
+  ),
+];
+
+const preloadAssets = [...new Set(imageAssets), BGM_SRC];
+
 function App() {
+  const [loadingRun, setLoadingRun] = useState(0);
+  const [loadingState, setLoadingState] = useState({
+    error: "",
+    isReady: false,
+    loaded: 0,
+    status: "正在整理回憶碎片",
+    total: preloadAssets.length + 1,
+  });
   const [stage, setStage] = useState<GameStage>("cover");
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -72,6 +95,75 @@ function App() {
   const endingsById = useMemo(() => new Map(story.endings.map((ending) => [ending.id, ending])), []);
   const currentNode = nodesById.get(nodeId) ?? nodesById.get(story.startNode);
   const currentEnding = currentNode?.ending ? endingsById.get(currentNode.ending) : undefined;
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadGameAssets() {
+      const total = preloadAssets.length + 1;
+      let loaded = 0;
+
+      const markLoaded = (status: string) => {
+        loaded += 1;
+        if (!isCancelled) {
+          setLoadingState({
+            error: "",
+            isReady: false,
+            loaded,
+            status,
+            total,
+          });
+        }
+      };
+
+      setLoadingState({
+        error: "",
+        isReady: false,
+        loaded: 0,
+        status: "正在整理回憶碎片",
+        total,
+      });
+
+      try {
+        await Promise.all([
+          ...preloadAssets.map(async (asset) => {
+            if (asset.endsWith(".mp3")) {
+              await preloadAudio(asset);
+              markLoaded("正在確認音樂檔案");
+              return;
+            }
+
+            await preloadImage(asset);
+            markLoaded("正在翻找日記與立繪");
+          }),
+          waitForFonts().then(() => markLoaded("正在讓文字清晰")),
+        ]);
+
+        if (!isCancelled) {
+          setLoadingState({
+            error: "",
+            isReady: true,
+            loaded: total,
+            status: "準備完成",
+            total,
+          });
+        }
+      } catch {
+        if (!isCancelled) {
+          setLoadingState((current) => ({
+            ...current,
+            error: "有素材暫時無法載入，請確認網路或重新整理。",
+          }));
+        }
+      }
+    }
+
+    loadGameAssets();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [loadingRun]);
 
   async function toggleBgm() {
     const audio = audioRef.current;
@@ -241,6 +333,20 @@ function App() {
     setPlayerName(nextName);
     setNameError("");
     setStage("diary");
+  }
+
+  if (!loadingState.isReady) {
+    return (
+      <main className="app">
+        <LoadingScreen
+          error={loadingState.error}
+          loaded={loadingState.loaded}
+          onRetry={() => setLoadingRun((current) => current + 1)}
+          status={loadingState.status}
+          total={loadingState.total}
+        />
+      </main>
+    );
   }
 
   return (
@@ -436,6 +542,68 @@ function App() {
   );
 }
 
+function preloadImage(src: string) {
+  return new Promise<void>((resolve, reject) => {
+    const image = new window.Image();
+    image.decoding = "async";
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error(`Unable to load image: ${src}`));
+    image.src = src;
+  });
+}
+
+async function preloadAudio(src: string) {
+  const response = await fetch(src, { cache: "force-cache" });
+  if (!response.ok) {
+    throw new Error(`Unable to load audio: ${src}`);
+  }
+}
+
+async function waitForFonts() {
+  if ("fonts" in document) {
+    await document.fonts.ready;
+  }
+}
+
+interface LoadingScreenProps {
+  error: string;
+  loaded: number;
+  onRetry: () => void;
+  status: string;
+  total: number;
+}
+
+function LoadingScreen({ error, loaded, onRetry, status, total }: LoadingScreenProps) {
+  const progress = total > 0 ? Math.round((loaded / total) * 100) : 0;
+
+  return (
+    <section className="loading-screen" aria-live="polite" aria-busy={!error}>
+      <div className="loading-mark">
+        <img src="/DreamAboutHim/assets/ui/logo.webp" alt="" />
+      </div>
+      <div className="loading-panel">
+        <p className="eyebrow">Dream of Forgotten Memories</p>
+        <h1>Loading</h1>
+        <p>{error || status}</p>
+        <div className="loading-bar" aria-label={`載入進度 ${progress}%`}>
+          <span style={{ width: `${progress}%` }} />
+        </div>
+        <div className="loading-meta">
+          <span>{progress}%</span>
+          <span>
+            {loaded} / {total}
+          </span>
+        </div>
+        {error && (
+          <button type="button" onClick={onRetry}>
+            重新載入
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 interface NovelScreenProps {
   node: VNNode;
   flags: FlagMap;
@@ -508,38 +676,46 @@ function NovelScreen({
           {saveMessage && <span>{saveMessage}</span>}
         </div>
         <p>{node.text}</p>
-
-        {node.keywordRules && (
-          <form className="keyword-form" onSubmit={onKeywordSubmit}>
-            <input
-              value={keyword}
-              onChange={(event) => onKeywordChange(event.target.value)}
-              placeholder="輸入關鍵字"
-              autoComplete="off"
-            />
-            <button type="submit">送出</button>
-            {keywordError && <p className="error-text">{keywordError}</p>}
-          </form>
-        )}
-
-        {node.choices?.length ? (
-          <div className="choices">
-            {node.choices.map((choice) => (
-              <button key={choice.label} type="button" onClick={() => onChoice(choice.next, choice.setFlags)}>
-                {choice.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          node.next && (
-            <button className="next-button" type="button" onClick={onAdvance}>
-              繼續
-              <ChevronRight size={18} />
-            </button>
-          )
+        {!node.keywordRules && !node.choices?.length && node.next && (
+          <button className="next-button" type="button" onClick={onAdvance}>
+            繼續
+            <ChevronRight size={18} />
+          </button>
         )}
         <div className="flag-line">{Object.keys(flags).length ? `已記錄：${Object.keys(flags).join(" / ")}` : "尚未做出選擇"}</div>
       </section>
+
+      {(node.keywordRules || node.choices?.length) && (
+        <section className="story-prompt" role="dialog" aria-label="劇情互動">
+          {node.keywordRules && (
+            <form className="keyword-form" onSubmit={onKeywordSubmit}>
+              <label htmlFor="story-keyword">輸入想起的關鍵字</label>
+              <div className="prompt-row">
+                <input
+                  id="story-keyword"
+                  value={keyword}
+                  onChange={(event) => onKeywordChange(event.target.value)}
+                  placeholder="輸入關鍵字"
+                  autoComplete="off"
+                />
+                <button type="submit">送出</button>
+              </div>
+              {keywordError && <p className="error-text">{keywordError}</p>}
+            </form>
+          )}
+
+          {node.choices?.length ? (
+            <div className="choices" aria-label="劇情分歧選項">
+              {node.choices.map((choice) => (
+                <button key={choice.label} type="button" onClick={() => onChoice(choice.next, choice.setFlags)}>
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      )}
+
       <div className="vn-bottom-tools">
         <button type="button">
           <PenLine size={18} />
