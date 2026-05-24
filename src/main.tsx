@@ -15,7 +15,6 @@ import {
   Settings,
   SkipForward,
   Upload,
-  VolumeX,
   Volume2,
   X,
 } from "lucide-react";
@@ -66,7 +65,7 @@ function App() {
   const [keywordError, setKeywordError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
-  const [isBgmMuted, setIsBgmMuted] = useState(false);
+  const [bgmVolume, setBgmVolume] = useState(0.38);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const nodesById = useMemo(() => new Map(story.nodes.map((node) => [node.id, node])), []);
@@ -79,7 +78,7 @@ function App() {
     if (!audio) return;
 
     if (audio.paused) {
-      audio.volume = isBgmMuted ? 0 : 0.38;
+      audio.volume = bgmVolume;
       try {
         await audio.play();
         setIsBgmPlaying(true);
@@ -93,14 +92,13 @@ function App() {
     setIsBgmPlaying(false);
   }
 
-  function toggleBgmMute() {
+  function changeBgmVolume(nextVolume: number) {
     const audio = audioRef.current;
-    if (!audio) return;
-
-    const nextMuted = !isBgmMuted;
-    audio.muted = nextMuted;
-    audio.volume = nextMuted ? 0 : 0.38;
-    setIsBgmMuted(nextMuted);
+    const clampedVolume = Math.min(1, Math.max(0, nextVolume));
+    if (audio) {
+      audio.volume = clampedVolume;
+    }
+    setBgmVolume(clampedVolume);
   }
 
   function submitPassword(event: React.FormEvent<HTMLFormElement>) {
@@ -253,9 +251,9 @@ function App() {
           <AppChrome
             variant="menu"
             isBgmPlaying={isBgmPlaying}
-            isBgmMuted={isBgmMuted}
+            bgmVolume={bgmVolume}
             onToggleBgm={toggleBgm}
-            onToggleBgmMute={toggleBgmMute}
+            onVolumeChange={changeBgmVolume}
           />
           <div className="diary-cover" aria-label="Dream About Him 日記本封面">
             <div className="cover-title">
@@ -315,9 +313,9 @@ function App() {
           <AppChrome
             variant="menu"
             isBgmPlaying={isBgmPlaying}
-            isBgmMuted={isBgmMuted}
+            bgmVolume={bgmVolume}
             onToggleBgm={toggleBgm}
-            onToggleBgmMute={toggleBgmMute}
+            onVolumeChange={changeBgmVolume}
           />
           <section className="name-card" aria-labelledby="name-title">
             <p className="eyebrow">Before Opening</p>
@@ -347,9 +345,9 @@ function App() {
           <AppChrome
             variant="menu"
             isBgmPlaying={isBgmPlaying}
-            isBgmMuted={isBgmMuted}
+            bgmVolume={bgmVolume}
             onToggleBgm={toggleBgm}
-            onToggleBgmMute={toggleBgmMute}
+            onVolumeChange={changeBgmVolume}
           />
           <button className="diary-index" type="button">
             <PenLine size={20} />
@@ -425,9 +423,9 @@ function App() {
           onLoad={loadGame}
           onRestart={restart}
           isBgmPlaying={isBgmPlaying}
-          isBgmMuted={isBgmMuted}
+          bgmVolume={bgmVolume}
           onToggleBgm={toggleBgm}
-          onToggleBgmMute={toggleBgmMute}
+          onVolumeChange={changeBgmVolume}
         />
       )}
 
@@ -452,9 +450,9 @@ interface NovelScreenProps {
   onLoad: () => void;
   onRestart: () => void;
   isBgmPlaying: boolean;
-  isBgmMuted: boolean;
+  bgmVolume: number;
   onToggleBgm: () => void;
-  onToggleBgmMute: () => void;
+  onVolumeChange: (volume: number) => void;
 }
 
 function NovelScreen({
@@ -471,18 +469,18 @@ function NovelScreen({
   onLoad,
   onRestart,
   isBgmPlaying,
-  isBgmMuted,
+  bgmVolume,
   onToggleBgm,
-  onToggleBgmMute,
+  onVolumeChange,
 }: NovelScreenProps) {
   return (
     <section className={`novel-screen bg-${node.background}`}>
       <AppChrome
         variant="novel"
         isBgmPlaying={isBgmPlaying}
-        isBgmMuted={isBgmMuted}
+        bgmVolume={bgmVolume}
         onToggleBgm={onToggleBgm}
-        onToggleBgmMute={onToggleBgmMute}
+        onVolumeChange={onVolumeChange}
       />
       <header className="vn-toolbar">
         <button className="tool-button" type="button" onClick={onSave}>
@@ -563,12 +561,12 @@ function NovelScreen({
 interface AppChromeProps {
   variant: "menu" | "novel";
   isBgmPlaying: boolean;
-  isBgmMuted: boolean;
+  bgmVolume: number;
   onToggleBgm: () => void;
-  onToggleBgmMute: () => void;
+  onVolumeChange: (volume: number) => void;
 }
 
-function AppChrome({ variant, isBgmPlaying, isBgmMuted, onToggleBgm, onToggleBgmMute }: AppChromeProps) {
+function AppChrome({ variant, isBgmPlaying, bgmVolume, onToggleBgm, onVolumeChange }: AppChromeProps) {
   return (
     <>
       <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
@@ -584,14 +582,17 @@ function AppChrome({ variant, isBgmPlaying, isBgmMuted, onToggleBgm, onToggleBgm
         >
           <Music size={22} />
         </button>
-        <button
-          className={isBgmMuted ? "is-muted" : ""}
-          type="button"
-          onClick={onToggleBgmMute}
-          aria-label={isBgmMuted ? "解除靜音" : "靜音"}
-        >
-          {isBgmMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
-        </button>
+        <label className="volume-control" aria-label="背景音樂音量">
+          <Volume2 size={22} />
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={bgmVolume}
+            onChange={(event) => onVolumeChange(Number(event.target.value))}
+          />
+        </label>
       </nav>
       {variant === "menu" && (
         <aside className="side-actions" aria-label="側邊選單">

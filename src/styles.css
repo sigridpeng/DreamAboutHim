@@ -125,6 +125,7 @@ input:focus {
 }
 
 .top-controls button,
+.volume-control,
 .side-actions button,
 .vn-bottom-tools button,
 .diary-index {
@@ -141,15 +142,32 @@ input:focus {
   width: 58px;
 }
 
+.volume-control {
+  align-items: center;
+  border: 1px solid rgba(247, 211, 146, 0.58);
+  border-radius: 999px;
+  display: flex;
+  gap: 12px;
+  min-height: 58px;
+  padding: 0 16px;
+}
+
+.volume-control input {
+  accent-color: #f7dfad;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  cursor: pointer;
+  min-height: auto;
+  padding: 0;
+  width: 104px;
+}
+
 .top-controls > button.is-active {
   background: rgba(80, 91, 151, 0.86);
   box-shadow:
     0 0 20px rgba(247, 211, 146, 0.34),
     0 8px 30px rgba(0, 0, 0, 0.24);
-}
-
-.top-controls > button.is-muted {
-  opacity: 0.62;
 }
 
 .top-controls .profile-pill {
@@ -191,8 +209,10 @@ input:focus {
 .cover-screen {
   align-items: center;
   background:
-    linear-gradient(rgba(8, 13, 34, 0.12), rgba(8, 13, 34, 0.4)),
-    url("/DreamAboutHim/assets/bg/bookstore.png") center / cover no-repeat;
+    linear-gradient(rgba(8, 13, 34, 0.16), rgba(8, 13, 34, 0.42)),
+    radial-gradient(circle at 18% 56%, rgba(255, 151, 78, 0.84), transparent 26%),
+    radial-gradient(circle at 76% 42%, rgba(89, 61, 142, 0.34), transparent 30%),
+    linear-gradient(150deg, #1b2954 0%, #182242 42%, #5f3045 62%, #d88a58 100%);
   display: flex;
   justify-content: center;
   padding: 28px;
@@ -202,8 +222,10 @@ input:focus {
 .name-screen {
   align-items: center;
   background:
-    linear-gradient(rgba(8, 13, 34, 0.18), rgba(8, 13, 34, 0.54)),
-    url("/DreamAboutHim/assets/bg/bookstore.png") center / cover no-repeat;
+    linear-gradient(rgba(8, 13, 34, 0.2), rgba(8, 13, 34, 0.5)),
+    radial-gradient(circle at 18% 56%, rgba(255, 151, 78, 0.7), transparent 25%),
+    radial-gradient(circle at 76% 42%, rgba(89, 61, 142, 0.32), transparent 30%),
+    linear-gradient(150deg, #1b2954 0%, #182242 42%, #5f3045 62%, #d88a58 100%);
   display: flex;
   justify-content: center;
   padding: 28px;
