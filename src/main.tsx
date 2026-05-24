@@ -53,8 +53,9 @@ const imageAssets = [
   `${ASSET_BASE}/diary/cover.webp`,
   `${ASSET_BASE}/diary/open-book.webp`,
   `${ASSET_BASE}/diary/page.webp`,
-  `${ASSET_BASE}/bg/cafe.png`,
-  `${ASSET_BASE}/bg/bookstore.png`,
+  `${ASSET_BASE}/bg/cafe.webp`,
+  `${ASSET_BASE}/bg/bookstore.webp`,
+  `${ASSET_BASE}/bg/starrysky.webp`,
   ...Object.values(characterSprites).flatMap((expressions) =>
     Object.values(expressions).map((spritePath) => `${ASSET_BASE}/role/${spritePath}`),
   ),
@@ -77,9 +78,6 @@ function App() {
   const [isMemoryTransitioning, setIsMemoryTransitioning] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [playerName, setPlayerName] = useState("");
-  const [nameDraft, setNameDraft] = useState("");
-  const [nameError, setNameError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
@@ -197,12 +195,12 @@ function App() {
     event.preventDefault();
     if (password.trim() === story.password) {
       setPasswordError("");
+      setIsPasswordOpen(false);
       setIsUnlocking(true);
       window.setTimeout(() => {
-        setIsPasswordOpen(false);
         setIsUnlocking(false);
-        setStage("nameEntry");
-      }, 900);
+        setStage("diary");
+      }, 1050);
       return;
     }
 
@@ -311,28 +309,12 @@ function App() {
     setIsMemoryTransitioning(false);
     setPassword("");
     setPasswordError("");
-    setPlayerName("");
-    setNameDraft("");
-    setNameError("");
     setPageIndex(0);
     setNodeId(story.startNode);
     setFlags({});
     setKeyword("");
     setKeywordError("");
     setSaveMessage("");
-  }
-
-  function submitPlayerName(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const nextName = nameDraft.trim();
-    if (!nextName) {
-      setNameError("請輸入玩家名字。");
-      return;
-    }
-
-    setPlayerName(nextName);
-    setNameError("");
-    setStage("diary");
   }
 
   if (!loadingState.isReady) {
@@ -375,6 +357,7 @@ function App() {
               <span>Click the lock to enter your password</span>
             </div>
           </div>
+          {isUnlocking && <div className="unlock-light" aria-hidden="true" />}
 
           {isPasswordOpen && (
             <div className="modal-backdrop" role="presentation">
@@ -414,38 +397,6 @@ function App() {
         </section>
       )}
 
-      {stage === "nameEntry" && (
-        <section className="name-screen">
-          <AppChrome
-            variant="menu"
-            isBgmPlaying={isBgmPlaying}
-            bgmVolume={bgmVolume}
-            onToggleBgm={toggleBgm}
-            onVolumeChange={changeBgmVolume}
-          />
-          <section className="name-card" aria-labelledby="name-title">
-            <p className="eyebrow">Before Opening</p>
-            <h1 id="name-title">留下你的名字</h1>
-            <p>日記需要知道正在翻閱它的人是誰。</p>
-            <form onSubmit={submitPlayerName} className="password-form">
-              <label htmlFor="player-name">玩家名字</label>
-              <div className="inline-control">
-                <input
-                  id="player-name"
-                  value={nameDraft}
-                  onChange={(event) => setNameDraft(event.target.value)}
-                  placeholder="輸入名字"
-                  autoComplete="off"
-                  autoFocus
-                />
-                <button type="submit">繼續</button>
-              </div>
-              {nameError && <p className="error-text">{nameError}</p>}
-            </form>
-          </section>
-        </section>
-      )}
-
       {stage === "diary" && (
         <section className="diary-screen">
           <AppChrome
@@ -455,10 +406,6 @@ function App() {
             onToggleBgm={toggleBgm}
             onVolumeChange={changeBgmVolume}
           />
-          <button className="diary-index" type="button">
-            <PenLine size={20} />
-            Diary Index
-          </button>
           <div className="diary-shell">
             <header className="topbar">
               <div>
