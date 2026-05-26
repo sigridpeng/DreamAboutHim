@@ -2,8 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BookOpen,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Image,
   Images,
   LockKeyhole,
@@ -26,6 +28,80 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const SAVE_KEY = "dream-about-him-save";
 const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
+
+type RouteEnding = "ending-1" | "ending-2" | "ending-2-branch" | "ending-3";
+type LockWheelIndex = 0 | 1 | 2;
+
+const lockWheels = [
+  ["A", "B", "C", "D", "E", "F", "G", "H", "I"],
+  ["A", "E", "I", "O", "U"],
+  ["A", "B", "C", "P", "Q", "R", "X", "Y", "Z"],
+] as const;
+
+const diaryPages = [
+  {
+    id: "page-1",
+    title: "六月十七日",
+    body: "我在抽屜深處找到一張泛黃的照片。照片裡有人笑得很燦爛，可我一時想不起那天的風從哪裡吹來。",
+    linkLabel: "照片線索",
+    linkUrl: "https://example.com/memory-1",
+  },
+  {
+    id: "page-2",
+    title: "六月十八日",
+    body: "第二張照片背面寫著陌生又熟悉的字。像是有人把名字藏進時間裡，只等我親手翻出來。",
+    linkLabel: "舊日線索",
+    linkUrl: "https://example.com/memory-2",
+  },
+  {
+    id: "page-3",
+    title: "最後一頁",
+    body: "相冊還空著。也許日記寫完的時候，照片就會自己回來。",
+  },
+];
+
+const albumSlots = [
+  { ending: "ending-1", hint: "黃兔" },
+  { ending: "ending-2", hint: "黃兔與白兔" },
+  { ending: "ending-3", hint: "黃兔與白兔與他" },
+];
+
+const routeNovel: Record<RouteEnding, {
+  albumEnding: string;
+  background: "bookstore" | "cafe";
+  speaker: string;
+  title: string;
+  text: string;
+}> = {
+  "ending-1": {
+    albumEnding: "ending-1",
+    background: "bookstore",
+    speaker: "欣雯",
+    title: "黃兔",
+    text: "書店裡的光很安靜。你想起和黃欣雯重逢的那一天，記憶像翻開的書頁，慢慢停在她的笑容上。",
+  },
+  "ending-2": {
+    albumEnding: "ending-2",
+    background: "bookstore",
+    speaker: "恩棋",
+    title: "黃兔與白兔",
+    text: "舊書店裡多了一個熟悉的身影。白恩棋笑著說起從前，黃兔與白兔終於在同一張照片裡清晰起來。",
+  },
+  "ending-2-branch": {
+    albumEnding: "ending-2",
+    background: "bookstore",
+    speaker: "旁白",
+    title: "缺席的位置",
+    text: "你們一起看著照片，聊起那個沒有出現的人。回憶很暖，卻也在空位旁留下了一點遺憾。",
+  },
+  "ending-3": {
+    albumEnding: "ending-3",
+    background: "cafe",
+    speaker: "天和",
+    title: "黃兔與白兔與他",
+    text: "咖啡廳的門鈴響起。藍天和真的回來了，而你終於明白，那一天不是夢，是你們重新相見的約定。",
+  },
+};
 
 const characterSprites: Record<string, Record<string, string>> = {
   protagonist: {
@@ -73,12 +149,25 @@ function App() {
     total: preloadAssets.length + 1,
   });
   const [stage, setStage] = useState<GameStage>("cover");
+  const [isIntroSolved, setIsIntroSolved] = useState(false);
+  const [introAnswer, setIntroAnswer] = useState("");
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
-  const [isMemoryTransitioning, setIsMemoryTransitioning] = useState(false);
-  const [password, setPassword] = useState("");
+  const [lockIndices, setLockIndices] = useState<[number, number, number]>([0, 0, 0]);
   const [passwordError, setPasswordError] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
+  const [isWritingDiary, setIsWritingDiary] = useState(false);
+  const [diaryRouteCount, setDiaryRouteCount] = useState<2 | 3 | 4 | null>(null);
+  const [diaryStep, setDiaryStep] = useState(0);
+  const [diaryInputs, setDiaryInputs] = useState({
+    count: "",
+    yellow: "",
+    white: "",
+    person: "",
+    date: "",
+  });
+  const [diaryModal, setDiaryModal] = useState("");
+  const [routeEnding, setRouteEnding] = useState<RouteEnding>("ending-1");
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
   const [unlockedEndings, setUnlockedEndings] = useState<string[]>([]);
@@ -93,6 +182,9 @@ function App() {
   const endingsById = useMemo(() => new Map(story.endings.map((ending) => [ending.id, ending])), []);
   const currentNode = nodesById.get(nodeId) ?? nodesById.get(story.startNode);
   const currentEnding = currentNode?.ending ? endingsById.get(currentNode.ending) : undefined;
+  const lockPassword = lockIndices
+    .map((letterIndex, wheelIndex) => lockWheels[wheelIndex][letterIndex])
+    .join("");
 
   useEffect(() => {
     let isCancelled = false;
@@ -191,9 +283,27 @@ function App() {
     setBgmVolume(clampedVolume);
   }
 
+  function changeIntroAnswer(value: string) {
+    const nextValue = value.toUpperCase();
+    setIntroAnswer(nextValue);
+    if (nextValue === "DREAMING") {
+      window.setTimeout(() => setIsIntroSolved(true), 260);
+    }
+  }
+
+  function rotateLockWheel(wheelIndex: LockWheelIndex, direction: 1 | -1) {
+    setLockIndices((current) => {
+      const next = [...current] as [number, number, number];
+      const wheelLength = lockWheels[wheelIndex].length;
+      next[wheelIndex] = (next[wheelIndex] + direction + wheelLength) % wheelLength;
+      return next;
+    });
+    setPasswordError("");
+  }
+
   function submitPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (password.trim() === story.password) {
+    if (lockPassword === story.password) {
       setPasswordError("");
       setIsPasswordOpen(false);
       setIsUnlocking(true);
@@ -207,15 +317,81 @@ function App() {
     setPasswordError("密碼不正確。日記仍然鎖著。");
   }
 
-  function enterVisualNovel() {
-    setIsMemoryTransitioning(true);
-    window.setTimeout(() => {
-      setStage("visualNovel");
-      setNodeId(story.startNode);
-      setKeyword("");
-      setKeywordError("");
-      setIsMemoryTransitioning(false);
-    }, 700);
+  function changeDiaryInput(field: keyof typeof diaryInputs, value: string) {
+    const nextValue = field === "count" ? value.replace(/\D/g, "").slice(0, 1) : value.trim();
+    setDiaryInputs((current) => ({ ...current, [field]: nextValue }));
+  }
+
+  function rememberWrong() {
+    setDiaryModal("我記錯了");
+  }
+
+  function startRouteEnding(nextEnding: RouteEnding) {
+    const route = routeNovel[nextEnding];
+    setRouteEnding(nextEnding);
+    setUnlockedEndings((current) =>
+      current.includes(route.albumEnding) ? current : [...current, route.albumEnding],
+    );
+    setStage("visualNovel");
+  }
+
+  function submitDiaryCount(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const count = Number(diaryInputs.count);
+    if (count !== 2 && count !== 3 && count !== 4) {
+      rememberWrong();
+      return;
+    }
+    setDiaryRouteCount(count);
+    setDiaryStep(1);
+  }
+
+  function submitDiaryNames(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const yellowName = diaryInputs.yellow.trim();
+    const whiteName = diaryInputs.white.trim();
+    const personName = diaryInputs.person.trim();
+
+    if (yellowName !== "欣雯" && yellowName !== "黃欣雯") {
+      rememberWrong();
+      return;
+    }
+
+    if (diaryRouteCount === 2) {
+      startRouteEnding("ending-1");
+      return;
+    }
+
+    if (whiteName !== "恩棋" && whiteName !== "白恩棋") {
+      rememberWrong();
+      return;
+    }
+
+    if (diaryRouteCount === 3) {
+      startRouteEnding("ending-2");
+      return;
+    }
+
+    if (personName === "阿漢") {
+      startRouteEnding("ending-2-branch");
+      return;
+    }
+
+    if (personName === "阿和" || personName === "天和" || personName === "藍天和") {
+      setDiaryStep(2);
+      return;
+    }
+
+    rememberWrong();
+  }
+
+  function submitDiaryDate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (diaryInputs.date.trim() !== "2026/7/24") {
+      rememberWrong();
+      return;
+    }
+    startRouteEnding("ending-3");
   }
 
   function resolveEndingId(nextFlags: FlagMap) {
@@ -304,12 +480,18 @@ function App() {
 
   function restart() {
     setStage("cover");
+    setIsIntroSolved(false);
+    setIntroAnswer("");
     setIsPasswordOpen(false);
     setIsUnlocking(false);
-    setIsMemoryTransitioning(false);
-    setPassword("");
+    setLockIndices([0, 0, 0]);
     setPasswordError("");
     setPageIndex(0);
+    setIsWritingDiary(false);
+    setDiaryRouteCount(null);
+    setDiaryStep(0);
+    setDiaryInputs({ count: "", yellow: "", white: "", person: "", date: "" });
+    setDiaryModal("");
     setNodeId(story.startNode);
     setFlags({});
     setKeyword("");
@@ -335,28 +517,45 @@ function App() {
     <main className={`app stage-${stage}`}>
       <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
       {stage === "cover" && (
-        <section className={`cover-screen ${isUnlocking ? "unlocking" : ""}`}>
-          <AppChrome
-            variant="menu"
-            isBgmPlaying={isBgmPlaying}
-            bgmVolume={bgmVolume}
-            onToggleBgm={toggleBgm}
-            onVolumeChange={changeBgmVolume}
-          />
-          <div className="diary-cover" aria-label="Dream About Him 日記本封面">
-            <div className="cover-title">
-              <p className="cover-kicker">Dream of</p>
-              <h1>Forgotten Memories</h1>
+        <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isUnlocking ? "unlocking" : ""}`}>
+          {isIntroSolved && (
+            <AppChrome
+              variant="menu"
+              isBgmPlaying={isBgmPlaying}
+              bgmVolume={bgmVolume}
+              onToggleBgm={toggleBgm}
+              onVolumeChange={changeBgmVolume}
+            />
+          )}
+          {!isIntroSolved && (
+            <div className="intro-layer">
+              <div className="hidden-item" aria-label="隱藏物件" />
+              <input
+                className="intro-input"
+                value={introAnswer}
+                onChange={(event) => changeIntroAnswer(event.target.value)}
+                autoComplete="off"
+                autoFocus
+                aria-label="入口密語"
+              />
             </div>
-            <p className="cover-subtitle">那些還沒有被想起的事，都被鎖在這裡。</p>
-            <button className="lock-button" type="button" onClick={() => setIsPasswordOpen(true)} aria-label="打開日記鎖">
-              <LockKeyhole size={32} />
-            </button>
-            <div className="password-hint">
-              <strong>Enter Password</strong>
-              <span>Click the lock to enter your password</span>
+          )}
+          {isIntroSolved && (
+            <div className="diary-cover" aria-label="Dream About Him 日記本封面">
+              <div className="cover-title">
+                <p className="cover-kicker">Dream of</p>
+                <h1>Forgotten Memories</h1>
+              </div>
+              <p className="cover-subtitle">那些還沒有被想起的事，都被鎖在這裡。</p>
+              <button className="lock-button" type="button" onClick={() => setIsPasswordOpen(true)} aria-label="打開日記鎖">
+                <LockKeyhole size={32} />
+              </button>
+              <div className="password-hint">
+                <strong>Enter Password</strong>
+                <span>Click the lock to enter your password</span>
+              </div>
             </div>
-          </div>
+          )}
           {isUnlocking && <div className="unlock-light" aria-hidden="true" />}
 
           {isPasswordOpen && (
@@ -375,20 +574,21 @@ function App() {
                 </button>
                 <p className="eyebrow">Locked Diary</p>
                 <h2 id="password-title">輸入密碼</h2>
-                <form onSubmit={submitPassword} className="password-form">
-                  <label htmlFor="password">密碼</label>
-                  <div className="inline-control">
-                    <input
-                      id="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder="試試 dream"
-                      type="password"
-                      autoComplete="off"
-                      autoFocus
-                    />
-                    <button type="submit">打開</button>
+                <form onSubmit={submitPassword} className="password-form lock-code-form">
+                  <div className="lock-wheels" aria-label="旋轉密碼鎖">
+                    {lockWheels.map((wheel, wheelIndex) => (
+                      <div className="lock-wheel" key={wheel.join("")}>
+                        <button type="button" onClick={() => rotateLockWheel(wheelIndex as LockWheelIndex, -1)} aria-label={`第 ${wheelIndex + 1} 格上一個字母`}>
+                          <ChevronUp size={18} />
+                        </button>
+                        <span>{wheel[lockIndices[wheelIndex]]}</span>
+                        <button type="button" onClick={() => rotateLockWheel(wheelIndex as LockWheelIndex, 1)} aria-label={`第 ${wheelIndex + 1} 格下一個字母`}>
+                          <ChevronDown size={18} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
+                  <button type="submit">打開</button>
                   {passwordError && <p className="error-text">{passwordError}</p>}
                 </form>
               </section>
@@ -418,21 +618,45 @@ function App() {
             </header>
 
             <article
-              className={`diary-page ${story.diaryPages[pageIndex].isEntryPage ? "entry-page" : ""}`}
+              className={`diary-page ${pageIndex === 2 ? "entry-page album-page" : ""}`}
             >
               <BookOpen className="page-mark" size={28} />
-              <h2>{story.diaryPages[pageIndex].title}</h2>
-              <p>{story.diaryPages[pageIndex].body}</p>
-              {story.diaryPages[pageIndex].isEntryPage && (
-                <button
-                  className={`memory-photo ${isMemoryTransitioning ? "memory-opening" : ""}`}
-                  type="button"
-                  onClick={enterVisualNovel}
-                  aria-label={story.diaryPages[pageIndex].entryLabel}
-                >
+              <h2>{diaryPages[pageIndex].title}</h2>
+              <p>{diaryPages[pageIndex].body}</p>
+              {pageIndex < 2 && (
+                <a className="diary-link-photo" href={diaryPages[pageIndex].linkUrl} target="_blank" rel="noreferrer">
                   <Image size={28} />
-                  <span>褪色照片</span>
-                </button>
+                  <span>{diaryPages[pageIndex].linkLabel}</span>
+                </a>
+              )}
+              {pageIndex === 2 && (
+                <>
+                  <div className="album-grid" aria-label="結局相冊">
+                    {albumSlots.map((slot) => (
+                      <div key={slot.hint} className={`album-slot ${unlockedEndings.includes(slot.ending) ? "is-unlocked" : ""}`}>
+                        <div className="album-photo-placeholder">
+                          {unlockedEndings.includes(slot.ending) ? <Image size={30} /> : null}
+                        </div>
+                        <span>{slot.hint}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {!isWritingDiary ? (
+                    <button className="write-diary-button" type="button" onClick={() => setIsWritingDiary(true)}>
+                      寫日記
+                    </button>
+                  ) : (
+                    <DiaryWriting
+                      routeCount={diaryRouteCount}
+                      step={diaryStep}
+                      inputs={diaryInputs}
+                      onChange={changeDiaryInput}
+                      onSubmitCount={submitDiaryCount}
+                      onSubmitNames={submitDiaryNames}
+                      onSubmitDate={submitDiaryDate}
+                    />
+                  )}
+                </>
               )}
             </article>
 
@@ -446,34 +670,32 @@ function App() {
                 上一頁
               </button>
               <span>
-                {pageIndex + 1} / {story.diaryPages.length}
+                {pageIndex + 1} / {diaryPages.length}
               </span>
               <button
                 type="button"
-                disabled={pageIndex === story.diaryPages.length - 1}
-                onClick={() => setPageIndex((current) => Math.min(story.diaryPages.length - 1, current + 1))}
+                disabled={pageIndex === diaryPages.length - 1}
+                onClick={() => setPageIndex((current) => Math.min(diaryPages.length - 1, current + 1))}
               >
                 下一頁
                 <ChevronRight size={18} />
               </button>
             </footer>
           </div>
+          {diaryModal && (
+            <div className="modal-backdrop" role="presentation">
+              <section className="memory-error-modal" role="dialog" aria-modal="true">
+                <p>{diaryModal}</p>
+                <button type="button" onClick={() => setDiaryModal("")}>再想一次</button>
+              </section>
+            </div>
+          )}
         </section>
       )}
 
-      {stage === "visualNovel" && currentNode && (
-        <NovelScreen
-          node={currentNode}
-          flags={flags}
-          keyword={keyword}
-          keywordError={keywordError}
-          saveMessage={saveMessage}
-          onKeywordChange={setKeyword}
-          onKeywordSubmit={submitKeyword}
-          onChoice={(next, nextFlags) => goToNode(next, nextFlags)}
-          onAdvance={() => advanceNode(currentNode)}
-          onSave={saveGame}
-          onLoad={loadGame}
+      {stage === "visualNovel" && (
+        <RouteNovelScreen
+          route={routeNovel[routeEnding]}
           onRestart={restart}
           isBgmPlaying={isBgmPlaying}
           bgmVolume={bgmVolume}
@@ -547,6 +769,120 @@ function LoadingScreen({ error, loaded, onRetry, status, total }: LoadingScreenP
           </button>
         )}
       </div>
+    </section>
+  );
+}
+
+interface DiaryWritingProps {
+  routeCount: 2 | 3 | 4 | null;
+  step: number;
+  inputs: {
+    count: string;
+    yellow: string;
+    white: string;
+    person: string;
+    date: string;
+  };
+  onChange: (field: keyof DiaryWritingProps["inputs"], value: string) => void;
+  onSubmitCount: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmitNames: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmitDate: (event: React.FormEvent<HTMLFormElement>) => void;
+}
+
+function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSubmitNames, onSubmitDate }: DiaryWritingProps) {
+  return (
+    <section className="diary-writing" aria-label="寫日記">
+      <form onSubmit={onSubmitCount} className="diary-line-form">
+        <span>今天，我和老友吃飯，我們</span>
+        <input
+          value={inputs.count}
+          onChange={(event) => onChange("count", event.target.value)}
+          inputMode="numeric"
+          aria-label="人數"
+        />
+        <span>人一起去了一間咖啡廳敘舊。</span>
+        {step === 0 && <button type="submit">寫下去</button>}
+      </form>
+
+      {step >= 1 && (
+        <form onSubmit={onSubmitNames} className="diary-line-form diary-continuation">
+          <span>真是好久不見了，</span>
+          <input value={inputs.yellow} onChange={(event) => onChange("yellow", event.target.value)} aria-label="黃兔名字" />
+          <span>她變得更漂亮了，而且還回到了我們以前的小學當老師！</span>
+          {routeCount && routeCount >= 3 && (
+            <>
+              <span>還有</span>
+              <input value={inputs.white} onChange={(event) => onChange("white", event.target.value)} aria-label="白兔名字" />
+              <span>，當年的小白兔居然已經長這麼高了，不過完全不意外他成為了美髮師，總覺得很適合他呢！</span>
+            </>
+          )}
+          {routeCount === 4 && (
+            <>
+              <span>我們還聊到了</span>
+              <input value={inputs.person} onChange={(event) => onChange("person", event.target.value)} aria-label="聊到的人" />
+              <span>的事。</span>
+            </>
+          )}
+          {step === 1 && <button type="submit">確認</button>}
+        </form>
+      )}
+
+      {step >= 2 && (
+        <form onSubmit={onSubmitDate} className="diary-line-form diary-continuation">
+          <span>沒想到...他真的回來了，我們真的要見面了！就在</span>
+          <select value={inputs.date} onChange={(event) => onChange("date", event.target.value)} aria-label="見面日期">
+            <option value="">選擇日期</option>
+            <option value="2026/7/17">2026/7/17</option>
+            <option value="2026/7/24">2026/7/24</option>
+            <option value="2026/8/24">2026/8/24</option>
+          </select>
+          <span>。</span>
+          <button type="submit">完成</button>
+        </form>
+      )}
+    </section>
+  );
+}
+
+interface RouteNovelScreenProps {
+  route: (typeof routeNovel)[RouteEnding];
+  onRestart: () => void;
+  isBgmPlaying: boolean;
+  bgmVolume: number;
+  onToggleBgm: () => void;
+  onVolumeChange: (volume: number) => void;
+}
+
+function RouteNovelScreen({ route, onRestart, isBgmPlaying, bgmVolume, onToggleBgm, onVolumeChange }: RouteNovelScreenProps) {
+  return (
+    <section className={`novel-screen bg-${route.background}`}>
+      <AppChrome
+        variant="novel"
+        isBgmPlaying={isBgmPlaying}
+        bgmVolume={bgmVolume}
+        onToggleBgm={onToggleBgm}
+        onVolumeChange={onVolumeChange}
+      />
+      <header className="vn-toolbar">
+        <button className="icon-button" type="button" onClick={onRestart} aria-label="重新開始">
+          <RotateCcw size={18} />
+        </button>
+      </header>
+      <div className="character-stage" aria-hidden="true">
+        <CharacterSprite character={{ id: "protagonist", name: "你", position: "left", expression: "soft" }} />
+        <CharacterSprite character={{ id: "friend", name: "友人", position: "right", expression: "soft" }} />
+        {route.background === "cafe" && <CharacterSprite character={{ id: "him", name: "他", position: "center", expression: "soft", active: true }} />}
+      </div>
+      <section className="dialogue-box">
+        <div className="speaker-row">
+          <strong>{route.speaker}</strong>
+        </div>
+        <p>{route.text}</p>
+        <button className="next-button" type="button" onClick={onRestart}>
+          回到入口
+          <ChevronRight size={18} />
+        </button>
+      </section>
     </section>
   );
 }

@@ -75,7 +75,22 @@ input {
   outline: none;
 }
 
+select {
+  border: 1px solid rgba(247, 211, 146, 0.38);
+  border-radius: 8px;
+  background: rgba(14, 15, 20, 0.78);
+  color: #fffaf2;
+  min-height: 44px;
+  padding: 0 14px;
+  outline: none;
+}
+
 input:focus {
+  border-color: #f1d28e;
+  box-shadow: 0 0 0 3px rgba(241, 210, 142, 0.16);
+}
+
+select:focus {
   border-color: #f1d28e;
   box-shadow: 0 0 0 3px rgba(241, 210, 142, 0.16);
 }
@@ -323,6 +338,47 @@ input:focus {
   min-width: 186px;
 }
 
+.intro-layer {
+  align-items: center;
+  animation: screenFadeIn 900ms ease both;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2.5vw, 32px);
+  inset: 0;
+  justify-content: center;
+  padding: 28px;
+  position: absolute;
+  z-index: 8;
+}
+
+.intro-solved .intro-layer {
+  animation: introLayerOut 420ms ease forwards;
+}
+
+.hidden-item {
+  aspect-ratio: 16 / 9;
+  background:
+    url("/DreamAboutHim/assets/ui/hiddenitem.webp") center / cover no-repeat,
+    linear-gradient(135deg, rgba(247, 211, 146, 0.18), rgba(28, 34, 75, 0.86));
+  border: 1px solid rgba(247, 211, 146, 0.46);
+  border-radius: 8px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+  max-height: 62%;
+  width: min(64%, 860px);
+}
+
+.intro-input {
+  background: rgba(9, 13, 31, 0.74);
+  border-color: rgba(247, 211, 146, 0.58);
+  color: #fff1cf;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.2rem, 2vw, 1.9rem);
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  width: min(32%, 360px);
+}
+
 .cover-screen {
   align-items: center;
   background:
@@ -374,6 +430,10 @@ input:focus {
     transform 780ms ease,
     opacity 780ms ease;
   width: min(46vw, 620px);
+}
+
+.intro-solved .diary-cover {
+  animation: diaryCoverIn 560ms ease both;
 }
 
 .unlocking .diary-cover {
@@ -525,6 +585,49 @@ p {
 .password-form {
   display: grid;
   gap: 12px;
+}
+
+.lock-code-form {
+  justify-items: center;
+}
+
+.lock-wheels {
+  display: flex;
+  gap: 16px;
+}
+
+.lock-wheel {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.lock-wheel span {
+  align-items: center;
+  background:
+    linear-gradient(rgba(255, 249, 236, 0.08), transparent),
+    rgba(8, 10, 22, 0.72);
+  border: 1px solid rgba(247, 211, 146, 0.58);
+  border-radius: 8px;
+  box-shadow: inset 0 0 16px rgba(255, 237, 176, 0.12);
+  color: #fff1cf;
+  display: flex;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.1rem;
+  height: 68px;
+  justify-content: center;
+  width: 62px;
+}
+
+.lock-wheel button {
+  align-items: center;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0;
+  width: 38px;
 }
 
 .inline-control {
@@ -696,6 +799,138 @@ p {
   animation: memoryOpen 700ms ease forwards;
 }
 
+.diary-link-photo {
+  align-items: center;
+  background:
+    radial-gradient(circle at 50% 52%, rgba(255, 215, 129, 0.34), transparent 30%),
+    linear-gradient(135deg, #22314d, #745c4d);
+  border: 7px solid #f4dca7;
+  border-radius: 8px;
+  box-shadow:
+    0 12px 26px rgba(64, 36, 22, 0.22),
+    inset 0 0 26px rgba(54, 35, 24, 0.32);
+  color: #ffe7b5;
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  gap: 10px;
+  height: 26%;
+  justify-content: center;
+  left: 61%;
+  position: absolute;
+  text-decoration: none;
+  top: 38%;
+  transform: rotate(-1.5deg);
+  width: 23%;
+}
+
+.album-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  left: 54%;
+  position: absolute;
+  top: 25%;
+  width: 34%;
+}
+
+.album-slot {
+  color: #6a4936;
+  display: grid;
+  font-family: Georgia, "Times New Roman", serif;
+  gap: 8px;
+  text-align: center;
+}
+
+.album-photo-placeholder {
+  align-items: center;
+  aspect-ratio: 3 / 4;
+  background:
+    linear-gradient(rgba(108, 76, 52, 0.12), rgba(108, 76, 52, 0.04));
+  border: 2px dashed rgba(111, 74, 44, 0.44);
+  border-radius: 6px;
+  color: #7a5235;
+  display: flex;
+  justify-content: center;
+}
+
+.album-slot.is-unlocked .album-photo-placeholder {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 231, 181, 0.7), transparent 35%),
+    linear-gradient(135deg, #274160, #8a715d);
+  border-style: solid;
+  box-shadow: 0 0 18px rgba(255, 213, 134, 0.34);
+}
+
+.write-diary-button {
+  bottom: 18%;
+  left: 64%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.diary-writing {
+  color: #4c3428;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.7rem, 1vw, 1rem);
+  left: 13%;
+  line-height: 1.75;
+  max-height: 36%;
+  overflow: auto;
+  position: absolute;
+  top: 54%;
+  width: 73%;
+}
+
+.diary-line-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.diary-line-form input,
+.diary-line-form select {
+  background: rgba(255, 248, 226, 0.48);
+  border-color: rgba(111, 74, 44, 0.42);
+  color: #4c3428;
+  min-height: 30px;
+  padding: 0 8px;
+  width: 96px;
+}
+
+.diary-line-form select {
+  width: 136px;
+}
+
+.diary-line-form button {
+  background: rgba(82, 52, 34, 0.76);
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.memory-error-modal {
+  background:
+    linear-gradient(rgba(255, 249, 236, 0.07), transparent),
+    rgba(27, 32, 70, 0.94);
+  border: 1px solid rgba(247, 211, 146, 0.56);
+  border-radius: 16px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.42);
+  color: #fff1cf;
+  display: grid;
+  gap: 18px;
+  padding: 30px;
+  text-align: center;
+  width: min(100%, 360px);
+}
+
+.memory-error-modal p {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.6rem;
+  margin: 0;
+}
+
 .diary-controls {
   align-items: center;
   bottom: 34px;
@@ -727,6 +962,18 @@ p {
 .novel-screen {
   display: block;
   padding: clamp(12px, 1.2vw, 18px);
+}
+
+.bg-bookstore {
+  background:
+    linear-gradient(rgba(8, 8, 18, 0.08), rgba(8, 8, 18, 0.28)),
+    url("/DreamAboutHim/assets/bg/bookstore.webp") center / cover no-repeat;
+}
+
+.bg-cafe {
+  background:
+    linear-gradient(rgba(10, 15, 38, 0.04), rgba(10, 15, 38, 0.2)),
+    url("/DreamAboutHim/assets/bg/cafe.webp") center / cover no-repeat;
 }
 
 .bg-bedroom {
@@ -1165,6 +1412,35 @@ p {
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes screenFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes introLayerOut {
+  to {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes diaryCoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
