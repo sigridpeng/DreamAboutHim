@@ -284,10 +284,13 @@ function App() {
   }
 
   function changeIntroAnswer(value: string) {
-    const nextValue = value.toUpperCase();
-    setIntroAnswer(nextValue);
-    if (nextValue === "DREAMING") {
-      window.setTimeout(() => setIsIntroSolved(true), 260);
+    setIntroAnswer(value.toUpperCase());
+  }
+
+  function submitIntroAnswer(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (introAnswer.trim().toUpperCase() === "DREAMING") {
+      setIsIntroSolved(true);
     }
   }
 
@@ -518,18 +521,19 @@ function App() {
       <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
       {stage === "cover" && (
         <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isUnlocking ? "unlocking" : ""}`}>
-          {isIntroSolved && (
-            <AppChrome
-              variant="menu"
-              isBgmPlaying={isBgmPlaying}
-              bgmVolume={bgmVolume}
-              onToggleBgm={toggleBgm}
-              onVolumeChange={changeBgmVolume}
-            />
-          )}
+          <AppChrome
+            variant="menu"
+            isBgmPlaying={isBgmPlaying}
+            bgmVolume={bgmVolume}
+            onToggleBgm={toggleBgm}
+            onVolumeChange={changeBgmVolume}
+          />
           {!isIntroSolved && (
-            <div className="intro-layer">
+            <form className="intro-layer" onSubmit={submitIntroAnswer}>
               <div className="hidden-item" aria-label="隱藏物件" />
+              <div className="intro-divider">
+                <span>Enter the answer</span>
+              </div>
               <input
                 className="intro-input"
                 value={introAnswer}
@@ -538,7 +542,8 @@ function App() {
                 autoFocus
                 aria-label="入口密語"
               />
-            </div>
+              <button className="intro-submit" type="submit">Submit</button>
+            </form>
           )}
           {isIntroSolved && (
             <div className="diary-cover" aria-label="Dream About Him 日記本封面">
