@@ -9,7 +9,6 @@ import {
   Image,
   Images,
   LockKeyhole,
-  Music,
   PenLine,
   PlayCircle,
   RotateCcw,
@@ -17,7 +16,6 @@ import {
   Settings,
   SkipForward,
   Upload,
-  Volume2,
   X,
 } from "lucide-react";
 import { story } from "./data";
@@ -28,6 +26,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const SAVE_KEY = "dream-about-him-save";
 const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
+const BGM_VOLUME = 0.38;
 
 type RouteEnding = "ending-1" | "ending-2" | "ending-2-branch" | "ending-3";
 type LockWheelIndex = 0 | 1 | 2;
@@ -150,6 +149,7 @@ function App() {
   });
   const [stage, setStage] = useState<GameStage>("cover");
   const [isIntroSolved, setIsIntroSolved] = useState(false);
+  const [isIntroTransitioning, setIsIntroTransitioning] = useState(false);
   const [introAnswer, setIntroAnswer] = useState("");
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
@@ -174,8 +174,6 @@ function App() {
   const [keyword, setKeyword] = useState("");
   const [keywordError, setKeywordError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
-  const [isBgmPlaying, setIsBgmPlaying] = useState(false);
-  const [bgmVolume, setBgmVolume] = useState(0.38);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const nodesById = useMemo(() => new Map(story.nodes.map((node) => [node.id, node])), []);
@@ -255,33 +253,30 @@ function App() {
     };
   }, [loadingRun]);
 
-  async function toggleBgm() {
+  useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!loadingState.isReady || !audio) return;
 
-    if (audio.paused) {
-      audio.volume = bgmVolume;
+    audio.volume = BGM_VOLUME;
+
+    const playBgm = async () => {
       try {
         await audio.play();
-        setIsBgmPlaying(true);
+        window.removeEventListener("pointerdown", playBgm);
+        window.removeEventListener("keydown", playBgm);
       } catch {
-        setIsBgmPlaying(false);
+        window.addEventListener("pointerdown", playBgm, { once: true });
+        window.addEventListener("keydown", playBgm, { once: true });
       }
-      return;
-    }
+    };
 
-    audio.pause();
-    setIsBgmPlaying(false);
-  }
+    playBgm();
 
-  function changeBgmVolume(nextVolume: number) {
-    const audio = audioRef.current;
-    const clampedVolume = Math.min(1, Math.max(0, nextVolume));
-    if (audio) {
-      audio.volume = clampedVolume;
-    }
-    setBgmVolume(clampedVolume);
-  }
+    return () => {
+      window.removeEventListener("pointerdown", playBgm);
+      window.removeEventListener("keydown", playBgm);
+    };
+  }, [loadingState.isReady]);
 
   function changeIntroAnswer(value: string) {
     setIntroAnswer(value.toUpperCase());
@@ -290,7 +285,13 @@ function App() {
   function submitIntroAnswer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (introAnswer.trim().toUpperCase() === "DREAMING") {
-      setIsIntroSolved(true);
+      setIsIntroTransitioning(true);
+      window.setTimeout(() => {
+        setIsIntroSolved(true);
+      }, 980);
+      window.setTimeout(() => {
+        setIsIntroTransitioning(false);
+      }, 1600);
     }
   }
 
@@ -311,9 +312,10 @@ function App() {
       setIsPasswordOpen(false);
       setIsUnlocking(true);
       window.setTimeout(() => {
-        setIsUnlocking(false);
-        setStage("diary");
-      }, 1050);
+      setIsUnlocking(false);
+      setStage("diary");
+      setIsIntroTransitioning(false);
+    }, 1050);
       return;
     }
 
@@ -484,6 +486,7 @@ function App() {
   function restart() {
     setStage("cover");
     setIsIntroSolved(false);
+    setIsIntroTransitioning(false);
     setIntroAnswer("");
     setIsPasswordOpen(false);
     setIsUnlocking(false);
@@ -520,15 +523,9 @@ function App() {
     <main className={`app stage-${stage}`}>
       <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
       {stage === "cover" && (
-        <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isUnlocking ? "unlocking" : ""}`}>
-          <AppChrome
-            variant="menu"
-            isBgmPlaying={isBgmPlaying}
-            bgmVolume={bgmVolume}
-            onToggleBgm={toggleBgm}
-            onVolumeChange={changeBgmVolume}
-          />
-          {!isIntroSolved && (
+        <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
+          <AppChrome variant="menu" />
+          {(!isIntroSolved || isIntroTransitioning) && (
             <form className="intro-layer" onSubmit={submitIntroAnswer}>
               <div className="hidden-item" aria-label="隱藏物件" />
               <div className="intro-divider">
@@ -545,6 +542,7 @@ function App() {
               <button className="intro-submit" type="submit">Submit</button>
             </form>
           )}
+          {isIntroTransitioning && <div className="intro-starlight" aria-hidden="true" />}
           {isIntroSolved && (
             <div className="diary-cover" aria-label="Dream About Him 日記本封面">
               <div className="cover-title">
@@ -604,13 +602,7 @@ function App() {
 
       {stage === "diary" && (
         <section className="diary-screen">
-          <AppChrome
-            variant="menu"
-            isBgmPlaying={isBgmPlaying}
-            bgmVolume={bgmVolume}
-            onToggleBgm={toggleBgm}
-            onVolumeChange={changeBgmVolume}
-          />
+          <AppChrome variant="menu" />
           <div className="diary-shell">
             <header className="topbar">
               <div>
@@ -702,10 +694,6 @@ function App() {
         <RouteNovelScreen
           route={routeNovel[routeEnding]}
           onRestart={restart}
-          isBgmPlaying={isBgmPlaying}
-          bgmVolume={bgmVolume}
-          onToggleBgm={toggleBgm}
-          onVolumeChange={changeBgmVolume}
         />
       )}
 
@@ -852,22 +840,12 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
 interface RouteNovelScreenProps {
   route: (typeof routeNovel)[RouteEnding];
   onRestart: () => void;
-  isBgmPlaying: boolean;
-  bgmVolume: number;
-  onToggleBgm: () => void;
-  onVolumeChange: (volume: number) => void;
 }
 
-function RouteNovelScreen({ route, onRestart, isBgmPlaying, bgmVolume, onToggleBgm, onVolumeChange }: RouteNovelScreenProps) {
+function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
   return (
     <section className={`novel-screen bg-${route.background}`}>
-      <AppChrome
-        variant="novel"
-        isBgmPlaying={isBgmPlaying}
-        bgmVolume={bgmVolume}
-        onToggleBgm={onToggleBgm}
-        onVolumeChange={onVolumeChange}
-      />
+      <AppChrome variant="novel" />
       <header className="vn-toolbar">
         <button className="icon-button" type="button" onClick={onRestart} aria-label="重新開始">
           <RotateCcw size={18} />
@@ -905,10 +883,6 @@ interface NovelScreenProps {
   onSave: () => void;
   onLoad: () => void;
   onRestart: () => void;
-  isBgmPlaying: boolean;
-  bgmVolume: number;
-  onToggleBgm: () => void;
-  onVolumeChange: (volume: number) => void;
 }
 
 function NovelScreen({
@@ -924,20 +898,10 @@ function NovelScreen({
   onSave,
   onLoad,
   onRestart,
-  isBgmPlaying,
-  bgmVolume,
-  onToggleBgm,
-  onVolumeChange,
 }: NovelScreenProps) {
   return (
     <section className={`novel-screen bg-${node.background}`}>
-      <AppChrome
-        variant="novel"
-        isBgmPlaying={isBgmPlaying}
-        bgmVolume={bgmVolume}
-        onToggleBgm={onToggleBgm}
-        onVolumeChange={onVolumeChange}
-      />
+      <AppChrome variant="novel" />
       <header className="vn-toolbar">
         <button className="tool-button" type="button" onClick={onSave}>
           <Save size={17} />
@@ -1024,40 +988,15 @@ function NovelScreen({
 
 interface AppChromeProps {
   variant: "menu" | "novel";
-  isBgmPlaying: boolean;
-  bgmVolume: number;
-  onToggleBgm: () => void;
-  onVolumeChange: (volume: number) => void;
 }
 
-function AppChrome({ variant, isBgmPlaying, bgmVolume, onToggleBgm, onVolumeChange }: AppChromeProps) {
+function AppChrome({ variant }: AppChromeProps) {
   return (
     <>
       <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
         <img src="/DreamAboutHim/assets/ui/logo.webp" alt="" />
         <span>The Dream of<br />Forgotten Memories</span>
       </div>
-      <nav className="top-controls" aria-label="主要控制">
-        <button
-          className={isBgmPlaying ? "is-active" : ""}
-          type="button"
-          onClick={onToggleBgm}
-          aria-label={isBgmPlaying ? "暫停背景音樂" : "播放背景音樂"}
-        >
-          <Music size={22} />
-        </button>
-        <label className="volume-control" aria-label="背景音樂音量">
-          <Volume2 size={22} />
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={bgmVolume}
-            onChange={(event) => onVolumeChange(Number(event.target.value))}
-          />
-        </label>
-      </nav>
       {variant === "menu" && (
         <aside className="side-actions" aria-label="側邊選單">
           <button type="button">
