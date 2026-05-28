@@ -117,6 +117,10 @@ select:focus {
   position: relative;
 }
 
+.orientation-guard {
+  display: none;
+}
+
 .loading-screen {
   align-items: center;
   background:
@@ -1523,10 +1527,38 @@ p {
 }
 
 @media (max-width: 900px) and (orientation: portrait) {
-  .app {
-    height: min(100dvw, calc(100dvh * 9 / 16));
-    transform: rotate(90deg);
-    width: min(100dvh, calc(100dvw * 16 / 9));
+  .orientation-guard {
+    align-items: center;
+    background:
+      radial-gradient(circle at 50% 46%, rgba(247, 211, 146, 0.16), transparent 30%),
+      linear-gradient(150deg, #080d22 0%, #151b3b 52%, #35233d 100%);
+    color: #f7dfad;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+    position: fixed;
+    z-index: 999;
+  }
+
+  .orientation-panel {
+    align-items: center;
+    border: 1px solid rgba(247, 211, 146, 0.58);
+    border-radius: 16px;
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.38),
+      inset 0 0 24px rgba(255, 255, 255, 0.05);
+    display: grid;
+    font-family: Georgia, "Times New Roman", serif;
+    gap: 14px;
+    justify-items: center;
+    padding: 30px 34px;
+    text-align: center;
+  }
+
+  .orientation-panel p {
+    font-size: 1.35rem;
+    margin: 0;
   }
 }
 

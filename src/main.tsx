@@ -27,6 +27,23 @@ const SAVE_KEY = "dream-about-him-save";
 const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
 const BGM_VOLUME = 0.38;
+const INTRO_ANSWER_HASH = "e7db3ceaf3815ff9d3400834aeb9dfea7cc569b3895de2692546868453a31f25";
+const DIARY_LOCK_HASH = "dfcae7d467db336f082cee92f87c5083f1a13fa9dd2a829a1923f9dddc67588c";
+const YELLOW_NAME_HASHES = new Set([
+  "de7de338bfa305172e0b2417fa0533e2a2359c719c78faee98c7358b66c225e0",
+  "81f56eab3d930e5f7b4e15d959d83a65806191aac0b791a9833e60efcb25df74",
+]);
+const WHITE_NAME_HASHES = new Set([
+  "0b25136078e9ad17acd877536e73d881c7bf3737812b38ebe7efe8b866b5614b",
+  "b3d3e7059e715381234aee454e6917f05a31dc64841f6934e834d39a6a5afc1f",
+]);
+const BRANCH_TWO_HASH = "8f05623d9e0ef55b9b8e813fdec8be84811170caef5515620bd37cf309adbc61";
+const BRANCH_THREE_HASHES = new Set([
+  "ae40aeb3c5b4f62cd7443a5755ab06212cca822d39f1aa9fb54c473f403bad0b",
+  "98509e3312f3d5a0e957d78c4a09aa27542776690f739790e076c92c051193b6",
+  "b46d5d06ab987fb8906b83030ed8f42f2fa3d145be73a60db80f2e0d086b719e",
+]);
+const REUNION_DATE_HASH = "d1bb792ab72df424d695fa4b9aba6b2d5d9315b148f1092d0708752853947a72";
 
 type RouteEnding = "ending-1" | "ending-2" | "ending-2-branch" | "ending-3";
 type LockWheelIndex = 0 | 1 | 2;
@@ -282,9 +299,9 @@ function App() {
     setIntroAnswer(value.toUpperCase());
   }
 
-  function submitIntroAnswer(event: React.FormEvent<HTMLFormElement>) {
+  async function submitIntroAnswer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (introAnswer.trim().toUpperCase() === "DREAMING") {
+    if (await matchesHash(introAnswer, INTRO_ANSWER_HASH, "upper")) {
       setIsIntroTransitioning(true);
       window.setTimeout(() => {
         setIsIntroSolved(true);
@@ -305,9 +322,9 @@ function App() {
     setPasswordError("");
   }
 
-  function submitPassword(event: React.FormEvent<HTMLFormElement>) {
+  async function submitPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (lockPassword === story.password) {
+    if (await matchesHash(lockPassword, DIARY_LOCK_HASH, "upper")) {
       setPasswordError("");
       setIsPasswordOpen(false);
       setIsUnlocking(true);
@@ -351,13 +368,13 @@ function App() {
     setDiaryStep(1);
   }
 
-  function submitDiaryNames(event: React.FormEvent<HTMLFormElement>) {
+  async function submitDiaryNames(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const yellowName = diaryInputs.yellow.trim();
-    const whiteName = diaryInputs.white.trim();
-    const personName = diaryInputs.person.trim();
+    const yellowName = await sha256(diaryInputs.yellow.trim());
+    const whiteName = await sha256(diaryInputs.white.trim());
+    const personName = await sha256(diaryInputs.person.trim());
 
-    if (yellowName !== "欣雯" && yellowName !== "黃欣雯") {
+    if (!YELLOW_NAME_HASHES.has(yellowName)) {
       rememberWrong();
       return;
     }
@@ -367,7 +384,7 @@ function App() {
       return;
     }
 
-    if (whiteName !== "恩棋" && whiteName !== "白恩棋") {
+    if (!WHITE_NAME_HASHES.has(whiteName)) {
       rememberWrong();
       return;
     }
@@ -377,12 +394,12 @@ function App() {
       return;
     }
 
-    if (personName === "阿漢") {
+    if (personName === BRANCH_TWO_HASH) {
       startRouteEnding("ending-2-branch");
       return;
     }
 
-    if (personName === "阿和" || personName === "天和" || personName === "藍天和") {
+    if (BRANCH_THREE_HASHES.has(personName)) {
       setDiaryStep(2);
       return;
     }
@@ -390,9 +407,9 @@ function App() {
     rememberWrong();
   }
 
-  function submitDiaryDate(event: React.FormEvent<HTMLFormElement>) {
+  async function submitDiaryDate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (diaryInputs.date.trim() !== "2026/7/24") {
+    if (!(await matchesHash(diaryInputs.date, REUNION_DATE_HASH))) {
       rememberWrong();
       return;
     }
@@ -521,6 +538,12 @@ function App() {
 
   return (
     <main className={`app stage-${stage}`}>
+      <section className="orientation-guard" aria-label="請將手機橫放">
+        <div className="orientation-panel">
+          <RotateCcw size={34} />
+          <p>請將手機橫放</p>
+        </div>
+      </section>
       <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
       {stage === "cover" && (
         <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
@@ -712,6 +735,19 @@ function preloadImage(src: string) {
     image.onerror = () => reject(new Error(`Unable to load image: ${src}`));
     image.src = src;
   });
+}
+
+async function sha256(value: string) {
+  const data = new TextEncoder().encode(value);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+async function matchesHash(value: string, expectedHash: string, transform: "none" | "upper" = "none") {
+  const normalized = transform === "upper" ? value.trim().toUpperCase() : value.trim();
+  return (await sha256(normalized)) === expectedHash;
 }
 
 async function preloadAudio(src: string) {

@@ -58,7 +58,6 @@ export interface Ending {
 }
 
 export interface StoryData {
-  password: string;
   diaryPages: DiaryPage[];
   startNode: string;
   nodes: VNNode[];
