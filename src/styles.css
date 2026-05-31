@@ -318,14 +318,10 @@ select:focus {
 
 .hidden-item {
   aspect-ratio: 2048 / 673;
-  background:
-    url("/DreamAboutHim/assets/ui/hiddenitem.webp") center / contain no-repeat,
-    linear-gradient(135deg, rgba(11, 24, 55, 0.9), rgba(28, 34, 75, 0.72));
-  border: 1px solid rgba(247, 211, 146, 0.74);
-  border-radius: 8px;
-  box-shadow:
-    0 0 24px rgba(247, 186, 91, 0.3),
-    0 26px 70px rgba(0, 0, 0, 0.34);
+  background: url("/DreamAboutHim/assets/ui/hiddenitem.webp?v=20260531b") center / contain no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   max-height: 25%;
   width: min(55%, 900px);
 }
