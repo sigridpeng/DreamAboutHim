@@ -95,16 +95,23 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(241, 210, 142, 0.16);
 }
 
+.app-viewport {
+  height: 900px;
+  overflow: hidden;
+  position: relative;
+  width: 1600px;
+}
+
 .app {
   aspect-ratio: 16 / 9;
-  height: min(100vh, calc(100vw * 9 / 16));
-  height: min(100dvh, calc(100dvw * 9 / 16));
+  container-type: size;
+  height: 900px;
   isolation: isolate;
   min-height: 0;
   overflow: hidden;
   position: relative;
-  width: min(100vw, calc(100vh * 16 / 9));
-  width: min(100dvw, calc(100dvh * 16 / 9));
+  transform-origin: left top;
+  width: 1600px;
 }
 
 .cover-screen,
@@ -132,7 +139,7 @@ select:focus {
   height: 100%;
   justify-items: center;
   overflow: hidden;
-  padding: clamp(28px, 5vw, 70px);
+  padding: clamp(28px, 5cqw, 70px);
   position: relative;
 }
 
@@ -146,15 +153,15 @@ select:focus {
 }
 
 .loading-mark {
-  left: clamp(34px, 5vw, 58px);
+  left: clamp(34px, 5cqw, 58px);
   position: absolute;
-  top: clamp(28px, 4vw, 38px);
+  top: clamp(28px, 4cqw, 38px);
 }
 
 .loading-mark img {
-  height: clamp(54px, 5.8vw, 74px);
+  height: clamp(54px, 5.8cqw, 74px);
   object-fit: contain;
-  width: clamp(54px, 5.8vw, 74px);
+  width: clamp(54px, 5.8cqw, 74px);
 }
 
 .loading-panel {
@@ -167,14 +174,14 @@ select:focus {
     0 26px 70px rgba(0, 0, 0, 0.38),
     inset 0 0 28px rgba(255, 255, 255, 0.06);
   max-width: 560px;
-  padding: clamp(26px, 4vw, 44px);
+  padding: clamp(26px, 4cqw, 44px);
   width: min(58%, 560px);
 }
 
 .loading-panel h1 {
   color: #fff1cf;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  font-size: clamp(2.75cqw, 5cqw, 6cqw);
   line-height: 1;
   margin-bottom: 16px;
 }
@@ -246,7 +253,7 @@ select:focus {
 
 .brand-lockup span {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.28rem;
+  font-size: 1.6cqw;
   line-height: 1.28;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
 }
@@ -272,7 +279,7 @@ select:focus {
   border-radius: 999px 0 0 999px;
   display: flex;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.08rem;
+  font-size: 1.35cqw;
   gap: 16px;
   justify-content: flex-start;
   min-width: 186px;
@@ -283,10 +290,10 @@ select:focus {
   animation: screenFadeIn 900ms ease both;
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 2.1vw, 28px);
+  gap: clamp(16px, 2.1cqw, 28px);
   inset: 0;
   justify-content: center;
-  padding: clamp(86px, 9vw, 120px) 28px 58px;
+  padding: clamp(86px, 9cqw, 120px) 28px 58px;
   position: absolute;
   z-index: 8;
 }
@@ -331,7 +338,7 @@ select:focus {
   color: #f7dfad;
   display: flex;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+  font-size: clamp(1.312cqw, 1.6cqw, 1.812cqw);
   gap: 18px;
   width: min(34%, 560px);
 }
@@ -353,7 +360,7 @@ select:focus {
   border-color: rgba(247, 211, 146, 0.58);
   color: #fff1cf;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.2rem, 2vw, 1.9rem);
+  font-size: clamp(1.5cqw, 2cqw, 2.375cqw);
   letter-spacing: 0;
   text-align: center;
   text-transform: uppercase;
@@ -362,7 +369,7 @@ select:focus {
 
 .intro-submit {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1rem, 1.45vw, 1.35rem);
+  font-size: clamp(1.25cqw, 1.45cqw, 1.688cqw);
   min-width: min(20%, 320px);
 }
 
@@ -408,7 +415,7 @@ select:focus {
   border-radius: 0;
   box-shadow: none;
   color: #fff4df;
-  max-height: min(82vh, 760px);
+  max-height: min(82cqh, 760px);
   max-width: 620px;
   padding: 0;
   position: relative;
@@ -416,7 +423,7 @@ select:focus {
   transition:
     transform 780ms ease,
     opacity 780ms ease;
-  width: min(46vw, 620px);
+  width: min(46cqw, 620px);
 }
 
 .intro-solved .diary-cover {
@@ -425,7 +432,7 @@ select:focus {
 
 .unlocking .diary-cover {
   opacity: 0;
-  transform: rotateY(-68deg) translateX(-6vw) scale(0.96);
+  transform: rotateY(-68deg) translateX(-6cqw) scale(0.96);
 }
 
 .cover-title,
@@ -441,7 +448,7 @@ select:focus {
 
 .diary-cover h1 {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.4rem, 9vw, 4.8rem);
+  font-size: clamp(3cqw, 9cqw, 6cqw);
   line-height: 1.05;
   margin: 26% 0 18px;
   max-width: 7ch;
@@ -451,7 +458,7 @@ select:focus {
   bottom: -50px;
   color: rgba(255, 232, 190, 0.92);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1rem, 1.5vw, 1.45rem);
+  font-size: clamp(1.25cqw, 1.5cqw, 1.812cqw);
   left: 50%;
   line-height: 1.8;
   max-width: none;
@@ -498,7 +505,7 @@ select:focus {
 }
 
 .password-hint strong {
-  font-size: 1.32rem;
+  font-size: 1.65cqw;
 }
 
 .password-hint span {
@@ -537,7 +544,7 @@ select:focus {
 
 .password-modal h2 {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 2rem;
+  font-size: 2.5cqw;
   margin-bottom: 18px;
 }
 
@@ -549,7 +556,7 @@ select:focus {
 
 .eyebrow {
   color: #f1d28e;
-  font-size: 0.78rem;
+  font-size: 0.975cqw;
   font-weight: 700;
   letter-spacing: 0;
   margin: 0 0 8px;
@@ -564,7 +571,7 @@ p {
 
 .topbar h1,
 .credits-projector h1 {
-  font-size: clamp(2rem, 6vw, 4.7rem);
+  font-size: clamp(2.5cqw, 6cqw, 5.875cqw);
   line-height: 1;
   margin-bottom: 24px;
 }
@@ -601,7 +608,7 @@ p {
   color: #fff1cf;
   display: flex;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 2.1rem;
+  font-size: 2.625cqw;
   height: 68px;
   justify-content: center;
   width: 62px;
@@ -625,7 +632,7 @@ p {
 
 .error-text {
   color: #ffb4a8;
-  font-size: 0.92rem;
+  font-size: 1.15cqw;
   margin: 0;
 }
 
@@ -643,7 +650,7 @@ p {
 
 .diary-shell {
   margin: 0 auto;
-  max-width: min(78vw, 1160px);
+  max-width: min(78cqw, 1160px);
   padding-top: 70px;
   width: 100%;
 }
@@ -683,20 +690,20 @@ p {
   display: block;
   height: auto;
   margin: 0 auto;
-  max-height: min(76vh, 760px);
-  max-width: min(78vw, 1160px);
+  max-height: min(76cqh, 760px);
+  max-width: min(78cqw, 1160px);
   min-height: 0;
   position: relative;
   transition:
     transform 220ms ease,
     box-shadow 220ms ease;
-  width: min(100%, calc(76vh * 1448 / 1086), 1160px);
+  width: min(100%, calc(76cqh * 1448 / 1086), 1160px);
 }
 
 .diary-page h2 {
   color: #7a5235;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.35rem, 2.7vw, 2.45rem);
+  font-size: clamp(1.688cqw, 2.7cqw, 3.062cqw);
   left: 18%;
   line-height: 1.2;
   margin: 0;
@@ -708,7 +715,7 @@ p {
 
 .diary-page p {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(0.95rem, 1.45vw, 1.32rem);
+  font-size: clamp(1.188cqw, 1.45cqw, 1.65cqw);
   left: 14.5%;
   line-height: 1.95;
   margin: 0;
@@ -766,7 +773,7 @@ p {
   flex-direction: column;
   font-weight: 700;
   gap: 10px;
-  height: clamp(120px, 16vw, 210px);
+  height: clamp(120px, 16cqw, 210px);
   justify-content: center;
   left: 60%;
   margin: 0;
@@ -859,7 +866,7 @@ p {
 .diary-writing {
   color: #4c3428;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(0.7rem, 1vw, 1rem);
+  font-size: clamp(0.875cqw, 1cqw, 1.25cqw);
   left: 13%;
   line-height: 1.75;
   max-height: 36%;
@@ -914,7 +921,7 @@ p {
 
 .memory-error-modal p {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.6rem;
+  font-size: 2cqw;
   margin: 0;
 }
 
@@ -933,7 +940,7 @@ p {
 
 .diary-controls span {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.45rem;
+  font-size: 1.812cqw;
   min-width: 86px;
   text-align: center;
 }
@@ -948,7 +955,7 @@ p {
 
 .novel-screen {
   display: block;
-  padding: clamp(12px, 1.2vw, 18px);
+  padding: clamp(12px, 1.2cqw, 18px);
 }
 
 .bg-bookstore {
@@ -986,7 +993,7 @@ p {
   position: absolute;
   left: 50%;
   right: auto;
-  top: clamp(28px, 3.2vw, 38px);
+  top: clamp(28px, 3.2cqw, 38px);
   transform: translateX(-50%);
   z-index: 12;
 }
@@ -1027,7 +1034,7 @@ p {
     filter 180ms ease,
     opacity 180ms ease,
     transform 180ms ease;
-  width: clamp(330px, 34vw, 620px);
+  width: clamp(330px, 34cqw, 620px);
 }
 
 .character-sprite::before {
@@ -1075,12 +1082,12 @@ p {
 
 .character-him {
   background-position: center 0;
-  width: clamp(350px, 35vw, 650px);
+  width: clamp(350px, 35cqw, 650px);
 }
 
 .character-friend {
   background-position: center 0;
-  width: clamp(300px, 31vw, 580px);
+  width: clamp(300px, 31cqw, 580px);
 }
 
 .character-protagonist::before {
@@ -1125,12 +1132,12 @@ p {
 
 .sprite {
   align-self: end;
-  height: min(68vh, 720px);
+  height: min(68cqh, 720px);
   justify-self: center;
-  max-width: min(42vw, 360px);
+  max-width: min(42cqw, 360px);
   min-width: 220px;
   position: relative;
-  width: 34vw;
+  width: 34cqw;
 }
 
 .sprite::before {
@@ -1171,7 +1178,7 @@ p {
   max-height: none;
   max-width: 74%;
   min-height: 0;
-  padding: clamp(18px, 2.1vw, 26px) clamp(28px, 3.5vw, 44px);
+  padding: clamp(18px, 2.1cqw, 26px) clamp(28px, 3.5cqw, 44px);
   position: absolute;
   transform: translateX(-50%);
   width: min(74%, 1040px);
@@ -1186,7 +1193,7 @@ p {
   color: #f7dfad;
   display: inline-flex;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.1rem, 1.4vw, 1.42rem);
+  font-size: clamp(1.375cqw, 1.4cqw, 1.775cqw);
   justify-content: center;
   margin-top: -52px;
   min-width: 220px;
@@ -1197,13 +1204,13 @@ p {
 .flag-line,
 .ending-count {
   color: rgba(245, 239, 231, 0.66);
-  font-size: 0.9rem;
+  font-size: 1.125cqw;
 }
 
 .dialogue-box > p {
   color: #fff1cf;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.08rem, 1.8vw, 1.64rem);
+  font-size: clamp(1.35cqw, 1.8cqw, 2.05cqw);
   line-height: 1.65;
   margin: 12px 0 14px;
 }
@@ -1241,7 +1248,7 @@ p {
   gap: 14px;
   left: 50%;
   max-width: min(72%, 840px);
-  padding: clamp(18px, 2vw, 26px);
+  padding: clamp(18px, 2cqw, 26px);
   position: absolute;
   top: 45%;
   transform: translate(-50%, -50%);
@@ -1270,7 +1277,7 @@ p {
   flex-direction: column;
   gap: 18px;
   justify-content: flex-end;
-  left: clamp(28px, 3.2vw, 50px);
+  left: clamp(28px, 3.2cqw, 50px);
   position: absolute;
   right: auto;
   z-index: 12;
@@ -1306,7 +1313,7 @@ p {
   color: rgba(255, 244, 223, 0.78);
   display: flex;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.4rem, 4vw, 3.6rem);
+  font-size: clamp(1.75cqw, 4cqw, 4.5cqw);
   inset: 0;
   justify-content: center;
   pointer-events: none;
@@ -1326,10 +1333,10 @@ p {
   background: rgba(10, 11, 15, 0.82);
   border: 1px solid rgba(245, 239, 231, 0.14);
   border-radius: 8px;
-  max-height: calc(100vh - 56px);
+  max-height: calc(100cqh - 56px);
   max-width: 780px;
   overflow: auto;
-  padding: clamp(24px, 5vw, 44px);
+  padding: clamp(24px, 5cqw, 44px);
   position: relative;
   width: min(100%, 780px);
   z-index: 2;
@@ -1553,83 +1560,7 @@ p {
   }
 
   .orientation-panel p {
-    font-size: 1.35rem;
+    font-size: 1.688cqw;
     margin: 0;
-  }
-}
-
-@media (max-height: 520px) and (orientation: landscape) {
-  .inline-control,
-  .prompt-row {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar {
-    align-items: flex-start;
-  }
-
-  .diary-controls {
-    display: grid;
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .vn-toolbar {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    left: auto;
-    right: 24px;
-    top: 76px;
-    transform: none;
-  }
-
-  .tool-button {
-    justify-content: center;
-    padding: 0 10px;
-  }
-
-  .character-stage {
-    inset: 48px 7% 92px;
-  }
-
-  .character-sprite {
-    min-width: 210px;
-    width: clamp(210px, 34vw, 330px);
-  }
-
-  .character-him {
-    width: clamp(230px, 36vw, 350px);
-  }
-
-  .position-left {
-    left: 35%;
-  }
-
-  .position-right {
-    left: 65%;
-  }
-
-  .character-friend {
-    width: clamp(200px, 32vw, 320px);
-  }
-
-  .sprite {
-    height: 42vh;
-    max-width: 260px;
-    min-width: 170px;
-    width: 44vw;
-  }
-
-  .dialogue-box {
-    bottom: 22px;
-    padding: 16px 22px;
-    width: 76%;
-  }
-
-  .story-prompt {
-    max-width: 58%;
-    padding: 16px;
-    top: 44%;
-    width: 58%;
   }
 }

@@ -27,6 +27,8 @@ const SAVE_KEY = "dream-about-him-save";
 const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
 const BGM_VOLUME = 0.38;
+const DESIGN_WIDTH = 1600;
+const DESIGN_HEIGHT = 900;
 const INTRO_ANSWER_HASH = "e7db3ceaf3815ff9d3400834aeb9dfea7cc569b3895de2692546868453a31f25";
 const DIARY_LOCK_HASH = "dfcae7d467db336f082cee92f87c5083f1a13fa9dd2a829a1923f9dddc67588c";
 const YELLOW_NAME_HASHES = new Set([
@@ -192,6 +194,14 @@ function App() {
   const [keywordError, setKeywordError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
+  const viewportScale = useViewportScale();
+  const viewportStyle = {
+    height: DESIGN_HEIGHT * viewportScale,
+    width: DESIGN_WIDTH * viewportScale,
+  };
+  const appStyle = {
+    transform: `scale(${viewportScale})`,
+  };
 
   const nodesById = useMemo(() => new Map(story.nodes.map((node) => [node.id, node])), []);
   const endingsById = useMemo(() => new Map(story.endings.map((ending) => [ending.id, ending])), []);
@@ -524,29 +534,32 @@ function App() {
 
   if (!loadingState.isReady) {
     return (
-      <main className="app">
-        <LoadingScreen
-          error={loadingState.error}
-          loaded={loadingState.loaded}
-          onRetry={() => setLoadingRun((current) => current + 1)}
-          status={loadingState.status}
-          total={loadingState.total}
-        />
-      </main>
+      <div className="app-viewport" style={viewportStyle}>
+        <main className="app" style={appStyle}>
+          <LoadingScreen
+            error={loadingState.error}
+            loaded={loadingState.loaded}
+            onRetry={() => setLoadingRun((current) => current + 1)}
+            status={loadingState.status}
+            total={loadingState.total}
+          />
+        </main>
+      </div>
     );
   }
 
   return (
-    <main className={`app stage-${stage}`}>
-      <section className="orientation-guard" aria-label="請將手機橫放">
-        <div className="orientation-panel">
-          <RotateCcw size={34} />
-          <p>請將手機橫放</p>
-        </div>
-      </section>
-      <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
-      {stage === "cover" && (
-        <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
+    <div className="app-viewport" style={viewportStyle}>
+      <main className={`app stage-${stage}`} style={appStyle}>
+        <section className="orientation-guard" aria-label="請將手機橫放">
+          <div className="orientation-panel">
+            <RotateCcw size={34} />
+            <p>請將手機橫放</p>
+          </div>
+        </section>
+        <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
+        {stage === "cover" && (
+          <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
           <AppChrome variant="menu" />
           {(!isIntroSolved || isIntroTransitioning) && (
             <form className="intro-layer" onSubmit={submitIntroAnswer}>
@@ -620,11 +633,11 @@ function App() {
               </section>
             </div>
           )}
-        </section>
-      )}
+          </section>
+        )}
 
-      {stage === "diary" && (
-        <section className="diary-screen">
+        {stage === "diary" && (
+          <section className="diary-screen">
           <AppChrome variant="menu" />
           <div className="diary-shell">
             <header className="topbar">
@@ -710,21 +723,47 @@ function App() {
               </section>
             </div>
           )}
-        </section>
-      )}
+          </section>
+        )}
 
-      {stage === "visualNovel" && (
-        <RouteNovelScreen
-          route={routeNovel[routeEnding]}
-          onRestart={restart}
-        />
-      )}
+        {stage === "visualNovel" && (
+          <RouteNovelScreen
+            route={routeNovel[routeEnding]}
+            onRestart={restart}
+          />
+        )}
 
-      {stage === "ending" && currentEnding && (
-        <EndingScreen ending={currentEnding} unlockedEndings={unlockedEndings} onRestart={restart} onLoad={loadGame} />
-      )}
-    </main>
+        {stage === "ending" && currentEnding && (
+          <EndingScreen ending={currentEnding} unlockedEndings={unlockedEndings} onRestart={restart} onLoad={loadGame} />
+        )}
+      </main>
+    </div>
   );
+}
+
+function getViewportScale() {
+  return Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+}
+
+function useViewportScale() {
+  const [scale, setScale] = useState(getViewportScale);
+
+  useEffect(() => {
+    function updateScale() {
+      setScale(getViewportScale());
+    }
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    window.visualViewport?.addEventListener("resize", updateScale);
+
+    return () => {
+      window.removeEventListener("resize", updateScale);
+      window.visualViewport?.removeEventListener("resize", updateScale);
+    };
+  }, []);
+
+  return scale;
 }
 
 function preloadImage(src: string) {
