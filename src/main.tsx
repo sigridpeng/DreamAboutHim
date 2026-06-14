@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { story } from "./data";
+import { endingRoutes, type EndingRouteLine, type RouteEnding } from "./endingRoutes";
 import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -47,7 +48,6 @@ const BRANCH_THREE_HASHES = new Set([
 ]);
 const REUNION_DATE_HASH = "d1bb792ab72df424d695fa4b9aba6b2d5d9315b148f1092d0708752853947a72";
 
-type RouteEnding = "ending-1" | "ending-2" | "ending-2-branch" | "ending-3";
 type LockWheelIndex = 0 | 1 | 2;
 
 const lockWheels = [
@@ -83,43 +83,6 @@ const albumSlots = [
   { ending: "ending-2", hint: "黃兔與白兔" },
   { ending: "ending-3", hint: "黃兔與白兔與他" },
 ];
-
-const routeNovel: Record<RouteEnding, {
-  albumEnding: string;
-  background: "bookstore" | "cafe";
-  speaker: string;
-  title: string;
-  text: string;
-}> = {
-  "ending-1": {
-    albumEnding: "ending-1",
-    background: "bookstore",
-    speaker: "欣雯",
-    title: "黃兔",
-    text: "書店裡的光很安靜。你想起和黃欣雯重逢的那一天，記憶像翻開的書頁，慢慢停在她的笑容上。",
-  },
-  "ending-2": {
-    albumEnding: "ending-2",
-    background: "bookstore",
-    speaker: "恩棋",
-    title: "黃兔與白兔",
-    text: "舊書店裡多了一個熟悉的身影。白恩棋笑著說起從前，黃兔與白兔終於在同一張照片裡清晰起來。",
-  },
-  "ending-2-branch": {
-    albumEnding: "ending-2",
-    background: "bookstore",
-    speaker: "旁白",
-    title: "缺席的位置",
-    text: "你們一起看著照片，聊起那個沒有出現的人。回憶很暖，卻也在空位旁留下了一點遺憾。",
-  },
-  "ending-3": {
-    albumEnding: "ending-3",
-    background: "cafe",
-    speaker: "天和",
-    title: "黃兔與白兔與他",
-    text: "咖啡廳的門鈴響起。藍天和真的回來了，而你終於明白，那一天不是夢，是你們重新相見的約定。",
-  },
-};
 
 const characterSprites: Record<string, Record<string, string>> = {
   protagonist: {
@@ -359,7 +322,7 @@ function App() {
   }
 
   function startRouteEnding(nextEnding: RouteEnding) {
-    const route = routeNovel[nextEnding];
+    const route = endingRoutes[nextEnding];
     setRouteEnding(nextEnding);
     setUnlockedEndings((current) =>
       current.includes(route.albumEnding) ? current : [...current, route.albumEnding],
@@ -728,7 +691,7 @@ function App() {
 
         {stage === "visualNovel" && (
           <RouteNovelScreen
-            route={routeNovel[routeEnding]}
+            route={endingRoutes[routeEnding]}
             onRestart={restart}
           />
         )}
@@ -742,7 +705,8 @@ function App() {
 }
 
 function getViewportScale() {
-  return Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+  const scale = Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
+  return Math.floor(scale * 10000) / 10000;
 }
 
 function useViewportScale() {
@@ -750,7 +714,8 @@ function useViewportScale() {
 
   useEffect(() => {
     function updateScale() {
-      setScale(getViewportScale());
+      const nextScale = getViewportScale();
+      setScale((current) => (current === nextScale ? current : nextScale));
     }
 
     updateScale();
@@ -913,11 +878,61 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
 }
 
 interface RouteNovelScreenProps {
-  route: (typeof routeNovel)[RouteEnding];
+  route: (typeof endingRoutes)[RouteEnding];
   onRestart: () => void;
 }
 
 function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
+  const [sceneIndex, setSceneIndex] = useState(0);
+  const [lineIndex, setLineIndex] = useState(0);
+  const [choiceLines, setChoiceLines] = useState<EndingRouteLine[] | null>(null);
+  const [isComplete, setIsComplete] = useState(false);
+  const scene = route.scenes[sceneIndex] ?? route.scenes[0];
+  const lines = choiceLines ?? scene.lines;
+  const line = lines[lineIndex] ?? lines[lines.length - 1];
+  const characters = line?.characters ?? route.characters;
+  const isChoicePoint = !choiceLines && !isComplete && lineIndex >= scene.lines.length - 1 && !!scene.choices?.length;
+
+  useEffect(() => {
+    setSceneIndex(0);
+    setLineIndex(0);
+    setChoiceLines(null);
+    setIsComplete(false);
+  }, [route]);
+
+  function advanceRoute() {
+    if (isChoicePoint) return;
+
+    if (lineIndex < lines.length - 1) {
+      setLineIndex((current) => current + 1);
+      return;
+    }
+
+    if (choiceLines) {
+      setChoiceLines(null);
+      setLineIndex(0);
+      setSceneIndex((current) => current + 1);
+      return;
+    }
+
+    if (sceneIndex < route.scenes.length - 1) {
+      setSceneIndex((current) => current + 1);
+      setLineIndex(0);
+      return;
+    }
+
+    setIsComplete(true);
+  }
+
+  function chooseRoute(linesForChoice: EndingRouteLine[]) {
+    setChoiceLines(linesForChoice);
+    setLineIndex(0);
+  }
+
+  if (isComplete) {
+    return <ThankYouScreen routeTitle={route.title} endingText={route.endingText} hint={route.hint} />;
+  }
+
   return (
     <section className={`novel-screen bg-${route.background}`}>
       <AppChrome variant="novel" />
@@ -927,20 +942,78 @@ function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
         </button>
       </header>
       <div className="character-stage" aria-hidden="true">
-        <CharacterSprite character={{ id: "protagonist", name: "你", position: "left", expression: "soft" }} />
-        <CharacterSprite character={{ id: "friend", name: "友人", position: "right", expression: "soft" }} />
-        {route.background === "cafe" && <CharacterSprite character={{ id: "him", name: "他", position: "center", expression: "soft", active: true }} />}
+        {characters.map((character) => (
+          <CharacterSprite key={`${character.id}-${character.position}`} character={character} />
+        ))}
       </div>
       <section className="dialogue-box">
         <div className="speaker-row">
-          <strong>{route.speaker}</strong>
+          <strong>{line?.speaker ?? "旁白"}</strong>
+          <span>{sceneIndex + 1} / {route.scenes.length}</span>
         </div>
-        <p>{route.text}</p>
-        <button className="next-button" type="button" onClick={onRestart}>
-          回到入口
-          <ChevronRight size={18} />
-        </button>
+        <p>{line?.text}</p>
+        {isChoicePoint && scene.choices ? (
+          <div className="route-choices" aria-label="劇情選項">
+            {scene.choices.map((choice) => (
+              <button key={choice.label} type="button" onClick={() => chooseRoute(choice.lines)}>
+                {choice.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button className="next-button" type="button" onClick={advanceRoute}>
+            {lineIndex < lines.length - 1 || choiceLines || sceneIndex < route.scenes.length - 1 ? "繼續" : "完成"}
+            <ChevronRight size={18} />
+          </button>
+        )}
       </section>
+    </section>
+  );
+}
+
+function ThankYouScreen({ routeTitle, endingText, hint }: { routeTitle: string; endingText: string; hint: string }) {
+  return (
+    <section className="thank-you-screen bg-starry">
+      <div className="thank-you-panel">
+        <p className="eyebrow">The Dream of Forgotten Memories</p>
+        <h1>Thank you for playing</h1>
+        <p className="thank-you-ending">
+          {routeTitle}：{endingText}
+        </p>
+        <p className="thank-you-hint">{hint}</p>
+
+        <section className="afterword-section" aria-labelledby="afterword-title">
+          <h2 id="afterword-title">作者後記</h2>
+          <p>
+            謝謝你陪這本日記走到最後。這個暫定結尾想先呈現「想起多少，照片就顯影多少」的感覺：
+            有些名字被找回，有些座位被重新點亮，而有些重逢，會在玩家願意多想一步時慢慢靠近。
+          </p>
+          <p>
+            目前這裡先作為測試版結束頁，之後會再調整演出、節奏、文字細節與正式後記內容。
+          </p>
+        </section>
+
+        <section className="other-games-section" aria-labelledby="other-games-title">
+          <h2 id="other-games-title">其他遊戲</h2>
+          <div className="other-games-grid">
+            <article>
+              <span>Coming Soon</span>
+              <strong>下一個故事</strong>
+              <p>預留給作者其他作品、續作或外部連結。</p>
+            </article>
+            <article>
+              <span>Archive</span>
+              <strong>作品列表</strong>
+              <p>之後可放置遊戲封面、簡介與遊玩入口。</p>
+            </article>
+            <article>
+              <span>Contact</span>
+              <strong>作者頁面</strong>
+              <p>預留給社群、網站或製作團隊資訊。</p>
+            </article>
+          </div>
+        </section>
+      </div>
     </section>
   );
 }
