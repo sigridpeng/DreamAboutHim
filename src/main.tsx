@@ -103,6 +103,12 @@ const characterSprites: Record<string, Record<string, string>> = {
     sad: "yellow/yellow-dressed-shy.webp",
     surprised: "yellow/yellow-dressed-stare.webp",
   },
+  "friend-casual": {
+    neutral: "yellow/yellow-normal.webp",
+    soft: "yellow/yellow-smile.webp",
+    sad: "yellow/yellow-shy.webp",
+    surprised: "yellow/yellow-stare.webp",
+  },
 };
 
 const imageAssets = [

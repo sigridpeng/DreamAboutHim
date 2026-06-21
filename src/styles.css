@@ -1203,7 +1203,8 @@ p {
   width: clamp(350px, 35cqw, 650px);
 }
 
-.character-friend {
+.character-friend,
+.character-friend-casual {
   background-size: auto 148%;
   background-position: center 0;
   width: clamp(300px, 31cqw, 580px);
@@ -1225,11 +1226,13 @@ p {
   background: linear-gradient(180deg, #dfd1b8, #4a4455);
 }
 
-.character-friend::before {
+.character-friend::before,
+.character-friend-casual::before {
   background: #e8c9aa;
 }
 
-.character-friend::after {
+.character-friend::after,
+.character-friend-casual::after {
   background: linear-gradient(180deg, #9db9b2, #3e5656);
 }
 

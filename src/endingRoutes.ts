@@ -31,8 +31,13 @@ export interface EndingRoute {
 
 type Expression = SceneCharacter["expression"];
 
-const hsinwen = (position: "left" | "center", expression: Expression = "neutral", active = true): SceneCharacter => ({
-  id: "friend",
+const hsinwen = (
+  position: "left" | "center",
+  expression: Expression = "neutral",
+  active = true,
+  dressed = false,
+): SceneCharacter => ({
+  id: dressed ? "friend" : "friend-casual",
   name: "黃欣雯",
   position,
   expression,
@@ -70,7 +75,7 @@ const c3 = (
   tianheExpression: Expression = "neutral",
   enchiExpression: Expression = "neutral",
 ) => [
-  hsinwen("left", hsinwenExpression, activeName === "黃欣雯"),
+  hsinwen("left", hsinwenExpression, activeName === "黃欣雯", true),
   tianhe(tianheExpression, activeName === "藍天和"),
   enchi(enchiExpression, activeName === "白恩棋"),
 ];
@@ -260,6 +265,32 @@ const ending2: EndingRoute = {
   hint: "三個人的座位亮了起來。黃色紙兔子和白色紙兔子靠在一起。",
 };
 
+const ending2WithoutAhan: EndingRoute = {
+  ...ending2,
+  scenes: [
+    ending2.scenes[0],
+    {
+      id: "three-person-ending",
+      lines: [
+        { text: "我們聊起彼此離開小學後的生活，也慢慢把那些空白的年份補了回來。" },
+        { speaker: "黃欣雯", text: "我現在回到小學當代課老師。有時候看著班上的孩子，會突然想起我們以前的樣子。", characters: c2("黃欣雯", "soft", "neutral") },
+        { speaker: "主角", text: "妳以前就很會照顧人。現在一定很受學生歡迎。" },
+        { speaker: "黃欣雯", text: "希望是這樣。至少他們看到我摺紙兔子時，都還滿開心的。", characters: c2("黃欣雯", "surprised", "neutral") },
+        { speaker: "白恩棋", text: "至於我，還是在美國用剪刀和彩色染劑努力生活。偶爾也會幫客人做很大膽的造型。", characters: c2("白恩棋", "soft", "surprised") },
+        { speaker: "主角", text: "聽起來很像你。小時候最喜歡顏色的人，長大後還是在和顏色一起工作。" },
+        { speaker: "白恩棋", text: "對吧？有些事情長大以後，反而變得更像自己了。", characters: c2("白恩棋", "soft", "soft") },
+        { text: "我們談起以前的座位、鮮豔的衣服，也談起那些下課後一起走過的走廊。三個人的笑聲，讓記憶裡的教室重新亮了起來。" },
+        { speaker: "白恩棋", text: "老朋友……真的很高興能再見到你！別忘了我，好嗎？", characters: c2("白恩棋", "soft", "neutral") },
+        { speaker: "黃欣雯", text: "我們大家下次再約，好嗎？現在先來拍張照片吧。", characters: c2("黃欣雯", "surprised", "neutral") },
+        { text: "我們三人擠在一起，在相片中留下了影像。" },
+        { speaker: "主角", text: "今天真的很開心。下次見，欣雯、恩棋。你們都要保重！" },
+        { text: "我們告別了彼此。這一次，我清楚記住了照片裡的三個人。", characters: [] },
+      ],
+    },
+  ],
+  hint: "三個人的座位亮了起來。這一次，照片裡沒有誰被叫錯名字。",
+};
+
 const ending3: EndingRoute = {
   albumEnding: "ending-3",
   background: "cafe",
@@ -270,7 +301,7 @@ const ending3: EndingRoute = {
       id: "full-reunion",
       lines: [
         { text: "咖啡店的門鈴響起時，我握緊了手中的繪本。", characters: [] },
-        { text: "黃欣雯坐在我對面，白恩棋坐在旁邊。桌上還有一本把我帶到這裡的謎題繪本。", characters: [hsinwen("left"), enchi()] },
+        { text: "黃欣雯坐在我對面，白恩棋坐在旁邊。桌上還有一本把我帶到這裡的謎題繪本。", characters: [hsinwen("left", "neutral", true, true), enchi()] },
         { text: "門被推開。他站在夜色和燈光之間。" },
         { speaker: "藍天和", text: "好久不見。", characters: c3("藍天和", "neutral", "soft", "neutral") },
         { speaker: "主角", text: "阿和……" },
@@ -311,7 +342,7 @@ const ending3: EndingRoute = {
 
 export const endingRoutes: Record<RouteEnding, EndingRoute> = {
   "ending-1": ending1,
-  "ending-2": ending2,
+  "ending-2": ending2WithoutAhan,
   "ending-2-branch": ending2,
   "ending-3": ending3,
 };
