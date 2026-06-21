@@ -1119,7 +1119,7 @@ p {
 .character-stage {
   align-items: end;
   display: block;
-  inset: clamp(54px, 6.6%, 84px) 8% clamp(82px, 10.5%, 132px);
+  inset: clamp(54px, 6.6%, 84px) 8% 0;
   pointer-events: none;
   position: absolute;
   z-index: 1;
@@ -1204,6 +1204,7 @@ p {
 }
 
 .character-friend {
+  background-size: auto 148%;
   background-position: center 0;
   width: clamp(300px, 31cqw, 580px);
 }
@@ -1241,11 +1242,11 @@ p {
 }
 
 .expression-surprised {
-  transform: translateX(-50%) translateY(-8px) scale(0.98);
+  transform: translateX(-50%) scale(0.98);
 }
 
 .character-sprite.active.expression-surprised {
-  transform: translateX(-50%) translateY(-8px) scale(1.02);
+  transform: translateX(-50%) scale(1.02);
 }
 
 .sprite {
@@ -1291,11 +1292,12 @@ p {
     0 18px 60px rgba(0, 0, 0, 0.34),
     inset 0 0 22px rgba(255, 255, 255, 0.06);
   bottom: clamp(28px, 4.4%, 48px);
+  height: 252px;
   left: 50%;
   margin: 0;
-  max-height: none;
+  max-height: 252px;
   max-width: 74%;
-  min-height: 0;
+  min-height: 252px;
   padding: clamp(18px, 2.1cqw, 26px) clamp(28px, 3.5cqw, 44px);
   position: absolute;
   transform: translateX(-50%);
@@ -1318,6 +1320,21 @@ p {
   padding: 12px 26px;
 }
 
+.speaker-row .speaker-hsinwen {
+  background: rgba(242, 196, 58, 0.2);
+  border-color: rgba(247, 211, 112, 0.72);
+}
+
+.speaker-row .speaker-enchi {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.68);
+}
+
+.speaker-row .speaker-tianhe {
+  background: rgba(134, 207, 255, 0.2);
+  border-color: rgba(153, 216, 255, 0.72);
+}
+
 .speaker-row span,
 .flag-line,
 .ending-count {
@@ -1329,8 +1346,13 @@ p {
   color: #fff1cf;
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1.35cqw, 1.8cqw, 2.05cqw);
+  height: calc(1.65em * 2);
   line-height: 1.65;
   margin: 12px 0 14px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-color: rgba(247, 211, 146, 0.42) transparent;
+  scrollbar-width: thin;
 }
 
 .keyword-form {
@@ -1388,7 +1410,7 @@ p {
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .route-choices button {
@@ -1547,7 +1569,10 @@ p {
 }
 
 .next-button {
-  margin-bottom: 12px;
+  bottom: 24px;
+  margin: 0;
+  position: absolute;
+  right: 40px;
 }
 
 .vn-bottom-tools {

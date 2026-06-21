@@ -1024,11 +1024,6 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
   return (
     <section className={`novel-screen bg-${route.background}`}>
       <AppChrome variant="novel" />
-      <header className="vn-toolbar">
-        <button className="icon-button" type="button" onClick={onRestart} aria-label="重新開始">
-          <RotateCcw size={18} />
-        </button>
-      </header>
       <div className={`character-stage ${isCharacterStageVisible ? "is-visible" : "is-hidden"}`} aria-hidden="true">
         {displayCharacters.map((character) => (
           <CharacterSprite key={`${character.id}-${character.position}`} character={character} />
@@ -1036,8 +1031,9 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
       </div>
       <section className="dialogue-box">
         <div className="speaker-row">
-          <strong>{line?.speaker ?? "旁白"}</strong>
-          <span>{sceneIndex + 1} / {route.scenes.length}</span>
+          {line?.speaker && line.speaker !== "旁白" && (
+            <strong className={getSpeakerClassName(line.speaker)}>{line.speaker}</strong>
+          )}
         </div>
         <p>{line?.text}</p>
         {isChoicePoint && scene.choices ? (
@@ -1145,7 +1141,9 @@ function NovelScreen({
 
       <section className="dialogue-box">
         <div className="speaker-row">
-          <strong>{node.speaker ?? "旁白"}</strong>
+          {node.speaker && node.speaker !== "旁白" && (
+            <strong className={getSpeakerClassName(node.speaker)}>{node.speaker}</strong>
+          )}
           {saveMessage && <span>{saveMessage}</span>}
         </div>
         <p>{node.text}</p>
@@ -1209,6 +1207,13 @@ function NovelScreen({
 
 interface AppChromeProps {
   variant: "menu" | "novel";
+}
+
+function getSpeakerClassName(speaker: string) {
+  if (speaker === "黃欣雯") return "speaker-name speaker-hsinwen";
+  if (speaker === "白恩棋") return "speaker-name speaker-enchi";
+  if (speaker === "藍天和") return "speaker-name speaker-tianhe";
+  return "speaker-name";
 }
 
 function AppChrome({ variant }: AppChromeProps) {
