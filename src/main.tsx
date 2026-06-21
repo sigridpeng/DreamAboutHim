@@ -22,7 +22,7 @@ import { story } from "./data";
 import { endingRoutes, type EndingRouteLine, type RouteEnding } from "./endingRoutes";
 import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
 const ASSET_BASE = "/DreamAboutHim/assets";
@@ -149,6 +149,7 @@ function App() {
     date: "",
   });
   const [diaryModal, setDiaryModal] = useState("");
+  const [isRouteTransitioning, setIsRouteTransitioning] = useState(false);
   const [routeEnding, setRouteEnding] = useState<RouteEnding>("ending-1");
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
@@ -323,11 +324,14 @@ function App() {
 
   function startRouteEnding(nextEnding: RouteEnding) {
     const route = endingRoutes[nextEnding];
+    playMagicTransitionSound();
+    setIsRouteTransitioning(true);
     setRouteEnding(nextEnding);
     setUnlockedEndings((current) =>
       current.includes(route.albumEnding) ? current : [...current, route.albumEnding],
     );
-    setStage("visualNovel");
+    window.setTimeout(() => setStage("visualNovel"), 650);
+    window.setTimeout(() => setIsRouteTransitioning(false), 1900);
   }
 
   function submitDiaryCount(event: React.FormEvent<HTMLFormElement>) {
@@ -513,7 +517,7 @@ function App() {
 
   return (
     <div className="app-viewport" style={viewportStyle}>
-      <main className={`app stage-${stage}`} style={appStyle}>
+      <main className={`app stage-${stage} ${isRouteTransitioning ? "route-transitioning" : ""}`} style={appStyle}>
         <section className="orientation-guard" aria-label="請將手機橫放">
           <div className="orientation-panel">
             <RotateCcw size={34} />
@@ -521,6 +525,16 @@ function App() {
           </div>
         </section>
         <audio ref={audioRef} src={BGM_SRC} loop preload="auto" />
+        {isRouteTransitioning && (
+          <div className="route-transition" aria-hidden="true">
+            <div className="route-transition-core" />
+            <div className="route-transition-ring ring-one" />
+            <div className="route-transition-ring ring-two" />
+            <div className="route-transition-sparks">
+              {Array.from({ length: 12 }, (_, index) => <span key={index} />)}
+            </div>
+          </div>
+        )}
         {stage === "cover" && (
           <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
           <AppChrome variant="menu" />
@@ -692,6 +706,10 @@ function App() {
         {stage === "visualNovel" && (
           <RouteNovelScreen
             route={endingRoutes[routeEnding]}
+            onOpenGallery={() => {
+              setPageIndex(2);
+              setStage("diary");
+            }}
             onRestart={restart}
           />
         )}
@@ -729,6 +747,59 @@ function useViewportScale() {
   }, []);
 
   return scale;
+}
+
+function playMagicTransitionSound() {
+  try {
+    const context = new AudioContext();
+    const now = context.currentTime;
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.5, now);
+    master.connect(context.destination);
+
+    [659.25, 783.99, 987.77, 1318.51].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = now + index * 0.1;
+      oscillator.type = index % 2 === 0 ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.04, start + 0.65);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.14, start + 0.035);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.95);
+      oscillator.connect(gain);
+      gain.connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 1);
+    });
+
+    const shimmerLength = Math.floor(context.sampleRate * 0.9);
+    const shimmerBuffer = context.createBuffer(1, shimmerLength, context.sampleRate);
+    const shimmerData = shimmerBuffer.getChannelData(0);
+    for (let index = 0; index < shimmerLength; index += 1) {
+      const progress = index / shimmerLength;
+      shimmerData[index] = (Math.random() * 2 - 1) * Math.sin(progress * Math.PI) * 0.22;
+    }
+
+    const shimmer = context.createBufferSource();
+    const highPass = context.createBiquadFilter();
+    const shimmerGain = context.createGain();
+    shimmer.buffer = shimmerBuffer;
+    highPass.type = "highpass";
+    highPass.frequency.setValueAtTime(4200, now);
+    shimmerGain.gain.setValueAtTime(0.0001, now);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.18, now + 0.18);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+    shimmer.connect(highPass);
+    highPass.connect(shimmerGain);
+    shimmerGain.connect(master);
+    shimmer.start(now);
+
+    void context.resume().catch(() => undefined);
+    window.setTimeout(() => void context.close(), 1800);
+  } catch {
+    // The visual transition still works when Web Audio is unavailable.
+  }
 }
 
 function preloadImage(src: string) {
@@ -879,25 +950,42 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
 
 interface RouteNovelScreenProps {
   route: (typeof endingRoutes)[RouteEnding];
+  onOpenGallery: () => void;
   onRestart: () => void;
 }
 
-function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
+function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
   const [choiceLines, setChoiceLines] = useState<EndingRouteLine[] | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [displayCharacters, setDisplayCharacters] = useState<SceneCharacter[]>([]);
+  const [isCharacterStageVisible, setIsCharacterStageVisible] = useState(false);
   const scene = route.scenes[sceneIndex] ?? route.scenes[0];
   const lines = choiceLines ?? scene.lines;
   const line = lines[lineIndex] ?? lines[lines.length - 1];
-  const characters = line?.characters ?? route.characters;
   const isChoicePoint = !choiceLines && !isComplete && lineIndex >= scene.lines.length - 1 && !!scene.choices?.length;
+
+  useLayoutEffect(() => {
+    if (line?.characters === undefined) return;
+
+    if (line.characters.length === 0) {
+      setIsCharacterStageVisible(false);
+      const fadeTimer = window.setTimeout(() => setDisplayCharacters([]), 320);
+      return () => window.clearTimeout(fadeTimer);
+    }
+
+    setDisplayCharacters(line.characters);
+    setIsCharacterStageVisible(true);
+  }, [line]);
 
   useEffect(() => {
     setSceneIndex(0);
     setLineIndex(0);
     setChoiceLines(null);
     setIsComplete(false);
+    setDisplayCharacters([]);
+    setIsCharacterStageVisible(false);
   }, [route]);
 
   function advanceRoute() {
@@ -930,7 +1018,7 @@ function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
   }
 
   if (isComplete) {
-    return <ThankYouScreen routeTitle={route.title} endingText={route.endingText} hint={route.hint} />;
+    return <ThankYouScreen onOpenGallery={onOpenGallery} onRestart={onRestart} />;
   }
 
   return (
@@ -941,8 +1029,8 @@ function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
           <RotateCcw size={18} />
         </button>
       </header>
-      <div className="character-stage" aria-hidden="true">
-        {characters.map((character) => (
+      <div className={`character-stage ${isCharacterStageVisible ? "is-visible" : "is-hidden"}`} aria-hidden="true">
+        {displayCharacters.map((character) => (
           <CharacterSprite key={`${character.id}-${character.position}`} character={character} />
         ))}
       </div>
@@ -971,49 +1059,34 @@ function RouteNovelScreen({ route, onRestart }: RouteNovelScreenProps) {
   );
 }
 
-function ThankYouScreen({ routeTitle, endingText, hint }: { routeTitle: string; endingText: string; hint: string }) {
+function ThankYouScreen({ onOpenGallery, onRestart }: { onOpenGallery: () => void; onRestart: () => void }) {
   return (
-    <section className="thank-you-screen bg-starry">
-      <div className="thank-you-panel">
-        <p className="eyebrow">The Dream of Forgotten Memories</p>
-        <h1>Thank you for playing</h1>
-        <p className="thank-you-ending">
-          {routeTitle}：{endingText}
-        </p>
-        <p className="thank-you-hint">{hint}</p>
-
-        <section className="afterword-section" aria-labelledby="afterword-title">
-          <h2 id="afterword-title">作者後記</h2>
-          <p>
-            謝謝你陪這本日記走到最後。這個暫定結尾想先呈現「想起多少，照片就顯影多少」的感覺：
-            有些名字被找回，有些座位被重新點亮，而有些重逢，會在玩家願意多想一步時慢慢靠近。
-          </p>
-          <p>
-            目前這裡先作為測試版結束頁，之後會再調整演出、節奏、文字細節與正式後記內容。
-          </p>
-        </section>
-
-        <section className="other-games-section" aria-labelledby="other-games-title">
-          <h2 id="other-games-title">其他遊戲</h2>
-          <div className="other-games-grid">
-            <article>
-              <span>Coming Soon</span>
-              <strong>下一個故事</strong>
-              <p>預留給作者其他作品、續作或外部連結。</p>
-            </article>
-            <article>
-              <span>Archive</span>
-              <strong>作品列表</strong>
-              <p>之後可放置遊戲封面、簡介與遊玩入口。</p>
-            </article>
-            <article>
-              <span>Contact</span>
-              <strong>作者頁面</strong>
-              <p>預留給社群、網站或製作團隊資訊。</p>
-            </article>
-          </div>
-        </section>
+    <section className="thank-you-screen">
+      <AppChrome variant="novel" />
+      <div className="thank-you-glow" aria-hidden="true" />
+      <div className="thank-you-content">
+        <h1>
+          <span>Thank You</span>
+          <em>for Playing</em>
+        </h1>
+        <div className="thank-you-ornament" aria-hidden="true"><span>✦</span></div>
+        <div className="thank-you-message">
+          <p>感謝你陪我做了一場夢。</p>
+          <p>那些還沒有被想起的事，都被鎖在這裡。</p>
+          <p>願你也能在現實裡，找到屬於自己的光。</p>
+        </div>
+        <div className="thank-you-actions">
+          <button type="button" onClick={onOpenGallery}>
+            <Images size={24} />
+            Gallery
+          </button>
+          <button type="button" onClick={onRestart}>
+            <RotateCcw size={24} />
+            Play Again
+          </button>
+        </div>
       </div>
+      <img className="thank-you-book" src="/DreamAboutHim/assets/diary/cover.webp" alt="" />
     </section>
   );
 }

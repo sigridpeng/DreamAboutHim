@@ -29,391 +29,289 @@ export interface EndingRoute {
   hint: string;
 }
 
-const hsinwen: SceneCharacter = {
+type Expression = SceneCharacter["expression"];
+
+const hsinwen = (position: "left" | "center", expression: Expression = "neutral", active = true): SceneCharacter => ({
   id: "friend",
   name: "黃欣雯",
-  position: "center",
-  expression: "soft",
-  active: true,
-};
+  position,
+  expression,
+  active,
+});
 
-const hsinwenLeft: SceneCharacter = {
-  ...hsinwen,
-  position: "left",
-};
-
-const enchi: SceneCharacter = {
+const enchi = (expression: Expression = "neutral", active = true): SceneCharacter => ({
   id: "him",
   name: "白恩棋",
   position: "right",
-  expression: "soft",
-  active: true,
-};
+  expression,
+  active,
+});
 
-const tianhe: SceneCharacter = {
+const tianhe = (expression: Expression = "neutral", active = true): SceneCharacter => ({
   id: "protagonist",
   name: "藍天和",
   position: "center",
-  expression: "soft",
-  active: true,
+  expression,
+  active,
+});
+
+const c1 = (expression: Expression = "neutral") => [hsinwen("center", expression)];
+const c2 = (
+  activeName: "黃欣雯" | "白恩棋",
+  hsinwenExpression: Expression = "neutral",
+  enchiExpression: Expression = "neutral",
+) => [
+  hsinwen("left", hsinwenExpression, activeName === "黃欣雯"),
+  enchi(enchiExpression, activeName === "白恩棋"),
+];
+const c3 = (
+  activeName: "黃欣雯" | "白恩棋" | "藍天和",
+  hsinwenExpression: Expression = "neutral",
+  tianheExpression: Expression = "neutral",
+  enchiExpression: Expression = "neutral",
+) => [
+  hsinwen("left", hsinwenExpression, activeName === "黃欣雯"),
+  tianhe(tianheExpression, activeName === "藍天和"),
+  enchi(enchiExpression, activeName === "白恩棋"),
+];
+
+const ending1: EndingRoute = {
+  albumEnding: "ending-1",
+  background: "bookstore",
+  title: "糖紙裡的初戀",
+  characters: c1(),
+  scenes: [
+    {
+      id: "opening",
+      lines: [
+        { text: "書店裡很安靜。", characters: [] },
+        { text: "我在靠窗的位置坐下。心臟微微悸動，等著那許久不見的她。" },
+        { text: "那一瞬間，我像是忽然回到小學教室。眼前的女孩轉過頭，那笑容依然明亮。" },
+        { speaker: "黃欣雯", text: "你來了。", characters: c1("neutral") },
+        { speaker: "主角", text: "欣雯。" },
+        { speaker: "黃欣雯", text: "嗯，好久不見了。我還在想，你會不會認不出我。", characters: c1("neutral") },
+        { speaker: "主角", text: "妳很好認。眼睛、長髮，還有……妳喜歡穿黃色的洋裝。" },
+        { speaker: "黃欣雯", text: "你還記得呀。", characters: c1("soft") },
+        { text: "她笑了。那個笑容讓書店裡的燈變得更暖，像很多年前，她坐在我前面，回頭看我的那一瞬間。" },
+      ],
+      choices: [
+        {
+          label: "我也記得妳以前常常請我吃糖。",
+          lines: [
+            { speaker: "主角", text: "我也記得妳以前常常請我吃糖。我到現在，還很喜歡牛奶糖呢。" },
+            { speaker: "黃欣雯", text: "真的嗎？早知道我應該帶來的，呵呵。", characters: c1("sad") },
+            { text: "她的臉頰變得紅潤。過往的記憶，像糖果般甜得在胸口中擴散。" },
+          ],
+        },
+        {
+          label: "因為我以前很喜歡妳呀。",
+          lines: [
+            { speaker: "主角", text: "因為我以前很喜歡妳呀。" },
+            { speaker: "黃欣雯", text: "……我知道。", characters: c1("sad") },
+            { speaker: "主角", text: "真的？" },
+            { speaker: "黃欣雯", text: "嗯。你以前常常偷坐我的座位。", characters: c1("sad") },
+            { speaker: "主角", text: "有那麼明顯嗎？" },
+            { speaker: "黃欣雯", text: "很明顯。可是那時候，我也還小，只覺得你蠻有趣的。", characters: c1("neutral") },
+            { speaker: "主角", text: "那現在呢？聽到這個，有什麼感覺？" },
+            { text: "也許已經沒有了當年的感受，但在說出口的瞬間，我感受到了一種酸澀的滿足。她低頭看著桌上隨手摺的黃色紙兔子。" },
+            { speaker: "黃欣雯", text: "現在……現在我覺得，能再見到你很好。", characters: c1("surprised") },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ahan",
+      lines: [
+        { text: "我們稍微聊了一些彼此的近況，將我們錯過的時光補完。" },
+        { speaker: "黃欣雯", text: "說起來，你以前和阿漢常常一起玩。", characters: c1("neutral") },
+        { speaker: "主角", text: "對啊，我有印象。" },
+        { speaker: "黃欣雯", text: "他成績很好，老師常常叫他回答問題。你和他成為好朋友後，功課突然進步了很多，你們還一起參加比賽得了獎。", characters: c1("soft") },
+        { speaker: "主角", text: "是啊……當時真的受到了他很多幫助。" },
+        { speaker: "黃欣雯", text: "我以前……真的有點，崇拜他呢。", characters: c1("sad") },
+        { speaker: "主角", text: "明明就是暗戀……我還記得妳的國語課本裡的小秘密。" },
+        { speaker: "黃欣雯", text: "呵呵……被發現了呢。誰叫你每次都偷坐我的座位，真是太壞了！", characters: c1("soft") },
+        { text: "黃欣雯笑著低下頭，壓了壓桌上紙兔子的耳朵。" },
+      ],
+      choices: [
+        {
+          label: "我還記得替他辦生日派對的那次……",
+          lines: [
+            { speaker: "主角", text: "我還記得替他辦生日派對的那次……" },
+            { speaker: "黃欣雯", text: "我也記得，他甚至感動到哭了呢。他自從和你變成朋友後，變得開朗許多。", characters: c1("soft") },
+            { speaker: "主角", text: "我記得我們吃完蛋糕後，還到他家後院去看附近活動的煙火。" },
+            { speaker: "黃欣雯", text: "嗯。我記得，除了我們三個，還有一位同學也有來。", characters: c1("neutral") },
+            { speaker: "主角", text: "誰？" },
+            { speaker: "黃欣雯", text: "綽號是小白兔的那位。", characters: c1("soft") },
+            { text: "我努力在記憶中搜尋這位同學的名字，但還是想不起來。" },
+          ],
+        },
+        {
+          label: "妳有他的消息嗎？",
+          lines: [
+            { speaker: "主角", text: "妳有他的消息嗎？" },
+            { speaker: "黃欣雯", text: "自從他回到美國後，就沒有人有他的消息了。上次同學會，甚至也沒什麼人記得他了。", characters: c1("neutral") },
+            { speaker: "主角", text: "畢竟已經這麼多年了……那個時候，資訊也還沒有像現在一樣流通。" },
+            { speaker: "黃欣雯", text: "對啊。不過，我記得我們有同學也去了美國發展，說不定能打聽到一點消息。", characters: c1("neutral") },
+            { speaker: "主角", text: "對了，我記得有一本繪本，裡面的謎題風格跟阿漢以前和我們玩的有點像。" },
+            { speaker: "黃欣雯", text: "嗯！我知道你說的，是《魔法拍檔》對吧？其實我也買了……", characters: c1("sad") },
+            { speaker: "主角", text: "雖然覺得不太可能，但要是這本繪本真的是阿漢畫的就好了。我有很多話想跟他說。" },
+            { text: "說到這，欣雯的雙眼閃著光芒。" },
+            { speaker: "黃欣雯", text: "我也想找到他。如果可以，我們一起解開這個繪本的謎題吧！", characters: c1("surprised") },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ending",
+      lines: [
+        { text: "我和欣雯有了一場溫馨愉快的約會。時間過得很快，又到了不得不說再見的時刻。" },
+        { speaker: "黃欣雯", text: "今天能這樣聊天，我很開心。", characters: c1("sad") },
+        { speaker: "主角", text: "我也是。" },
+        { speaker: "黃欣雯", text: "下次再約吧？也許，我們會找到更多同學一起開派對。", characters: c1("sad") },
+        { speaker: "主角", text: "好啊！我很期待那天！" },
+        { speaker: "黃欣雯", text: "我們約好了喔！下次見，老朋友！", characters: c1("surprised") },
+        { text: "她的眼神很溫柔，看起來像在懷念著什麼。" },
+        { speaker: "主角", text: "約好了！下次見！" },
+        { text: "她走了，雖然不確定下次見面的日期，但我仍然期待著這份終於恢復的聯繫。", characters: [] },
+      ],
+    },
+  ],
+  endingText: "我找回了坐在我前面的女孩。她記得牛奶糖，也記得我還沒學會好好說喜歡的年紀。",
+  hint: "日記本裡的照片亮起第一個位置。還有一些聲音，仍藏在沒有翻開的地方。",
 };
 
-const withActive = (
-  characters: SceneCharacter[],
-  activeName?: string,
-  expression: SceneCharacter["expression"] = "soft",
-) =>
-  characters.map((character) => ({
-    ...character,
-    expression: character.name === activeName ? expression : "neutral",
-    active: !activeName || character.name === activeName,
-  }));
+const ending2: EndingRoute = {
+  albumEnding: "ending-2",
+  background: "bookstore",
+  title: "白色兔子與舊照片",
+  characters: c2("黃欣雯"),
+  scenes: [
+    {
+      id: "opening",
+      lines: [
+        { text: "書店裡很安靜。", characters: [] },
+        { text: "我在靠窗的位置坐下。心臟微微悸動，等著那許久不見的老友們。" },
+        { text: "那一瞬間，我像是忽然回到小學教室。眼前的女孩轉過頭，那笑容依然明亮，而她身旁站著一個很高、很會笑的人。" },
+        { speaker: "白恩棋", text: "你真的來了。我還以為你看到我會認不出來。", characters: c2("白恩棋") },
+        { speaker: "主角", text: "白恩棋？" },
+        { speaker: "白恩棋", text: "答對。本人現在比小時候高很多，值得掌聲鼓勵。", characters: c2("白恩棋") },
+        { speaker: "黃欣雯", text: "他現在在美國當美髮師。", characters: c2("黃欣雯") },
+        { speaker: "白恩棋", text: "每天都在用剪刀拯救世界，還有用染髮劑施展魔法。", characters: c2("白恩棋") },
+        { speaker: "主角", text: "你以前好像很安靜。" },
+        { speaker: "白恩棋", text: "很安靜，很矮，很愛畫畫，衣服還很鮮豔。簡單來說，很容易被記住，也很容易被笑。但現在完全不一樣了！", characters: c2("白恩棋", "neutral", "surprised") },
+        { text: "他說得輕快，像是把回憶快轉。" },
+      ],
+      choices: [
+        {
+          label: "你現在也變太高了吧！",
+          lines: [
+            { speaker: "主角", text: "你現在也變太高了吧！" },
+            { speaker: "白恩棋", text: "謝謝，我小時候欠下的身高，長大一次討回來。", characters: c2("白恩棋", "neutral", "soft") },
+            { speaker: "黃欣雯", text: "你以前排隊都站第一個。", characters: c2("黃欣雯", "soft", "soft") },
+            { speaker: "白恩棋", text: "而且還常常被擋住。現在換我擋別人視線。", characters: c2("白恩棋", "soft", "sad") },
+            { speaker: "主角", text: "你講話也變很多。" },
+            { speaker: "白恩棋", text: "以前太小聲，現在補回來。你呢？以前像小隊長一樣高調，現在怎麼變這麼謹慎？", characters: c2("白恩棋", "soft", "surprised") },
+          ],
+        },
+        {
+          label: "你現在看起來像會幫明星剪頭髮的人。",
+          lines: [
+            { speaker: "主角", text: "你現在看起來像會幫明星剪頭髮的人。" },
+            { speaker: "白恩棋", text: "謝謝，我決定把這句話寫進履歷。", characters: c2("白恩棋", "neutral", "soft") },
+            { speaker: "黃欣雯", text: "他真的很會剪，我看過照片。", characters: c2("黃欣雯", "neutral", "soft") },
+            { speaker: "白恩棋", text: "連欣雯老師都這麼說了，是不是要來光顧一下我的店？", characters: c2("白恩棋", "neutral", "surprised") },
+            { speaker: "主角", text: "那你以前就對頭髮有興趣嗎？" },
+            { speaker: "白恩棋", text: "以前是對顏色有興趣，彩色鉛筆、色紙、公仔、衣服。後來發現頭髮也可以很有特色。", characters: c2("白恩棋", "neutral", "soft") },
+            { speaker: "黃欣雯", text: "恩棋以前很會畫畫。一到美勞課，他眼睛就會亮起來。", characters: c2("黃欣雯", "neutral", "soft") },
+            { speaker: "白恩棋", text: "結果那時候大家只覺得我衣服太亮。", characters: c2("白恩棋", "neutral", "sad") },
+          ],
+        },
+      ],
+    },
+    {
+      id: "ahan-and-ending",
+      lines: [
+        { speaker: "白恩棋", text: "對了，你還記得阿漢嗎？", characters: c2("白恩棋") },
+        { speaker: "主角", text: "阿漢……" },
+        { speaker: "黃欣雯", text: "以前很常跟你在一起的那個。", characters: c2("黃欣雯") },
+        { speaker: "白恩棋", text: "跑一下就滿頭汗，可是每次打籃球都還是會來。我記得他那時候常常帶手帕。", characters: c2("白恩棋") },
+        { speaker: "黃欣雯", text: "他功課很好，字也寫得漂亮。", characters: c2("黃欣雯", "sad", "neutral") },
+        { speaker: "白恩棋", text: "對，而且他家好像有很多書。那次生日，我們不是去過他家嗎？", characters: c2("白恩棋") },
+        { speaker: "主角", text: "生日？" },
+        { speaker: "黃欣雯", text: "嗯。我、你、恩棋，還有阿漢，我們一起去他家。", characters: c2("黃欣雯") },
+        { speaker: "白恩棋", text: "我記得那天有蛋糕。我們用很漂亮的茶杯喝紅茶。", characters: c2("白恩棋") },
+        { text: "茶杯。這個詞像一枚小石子，落進心裡某個很深的地方。水面晃了一下，卻還沒有完全映出形狀。" },
+        { speaker: "白恩棋", text: "說到阿漢……他不是在當年回到美國了嗎？然後就這樣跟大家失聯了……", characters: c2("白恩棋", "neutral", "sad") },
+        { speaker: "白恩棋", text: "我現在也在美國定居，搞不好會在街頭的某處見到他。", characters: c2("白恩棋", "neutral", "soft") },
+        { speaker: "黃欣雯", text: "如果有他的消息，一定要告訴我們。好希望我們能再一起聚聚！", characters: c2("黃欣雯", "soft", "soft") },
+        { speaker: "主角", text: "同意！到時我們幾個一定要再揪一團！畢竟我們可是彩虹戰隊啊！" },
+        { speaker: "白恩棋", text: "哈哈！沒錯沒錯！", characters: c2("白恩棋", "soft", "surprised") },
+        { speaker: "黃欣雯", text: "哈哈！你居然還記得這個！", characters: c2("黃欣雯", "soft", "surprised") },
+        { text: "我們沒有把所有事情都說完，可三個人的笑聲已經充滿了這趟相聚的旅程。時間過得很快，又到了分離的時刻。" },
+        { speaker: "白恩棋", text: "老朋友……真的很高興能再見到你！別忘了我，好嗎？", characters: c2("白恩棋") },
+        { speaker: "黃欣雯", text: "我們大家下次再約，好嗎？我們現在要不要來拍張照呢？", characters: c2("黃欣雯", "surprised", "neutral") },
+        { text: "我們三人擠在一起，在相片中留下了影像。" },
+        { speaker: "主角", text: "今天真的很開心！也許下次還會想起更多有趣的回憶。下次見……欣雯、恩棋，保重身體！" },
+        { text: "我們告別了彼此，在笑聲與溫馨之中。這次的相聚很熱鬧，卻總覺得……少了什麼。", characters: [] },
+      ],
+    },
+  ],
+  endingText: "我找回了兩位老同學，也找回了一些下課後的聲音。舊照片還有幾處模糊，可燈已經亮起來了。",
+  hint: "三個人的座位亮了起來。黃色紙兔子和白色紙兔子靠在一起。",
+};
 
-const c1 = [hsinwen];
-const c2 = [hsinwenLeft, enchi];
-const c3 = [hsinwenLeft, tianhe, enchi];
+const ending3: EndingRoute = {
+  albumEnding: "ending-3",
+  background: "cafe",
+  title: "喊出你的名字",
+  characters: c3("藍天和"),
+  scenes: [
+    {
+      id: "full-reunion",
+      lines: [
+        { text: "咖啡店的門鈴響起時，我握緊了手中的繪本。", characters: [] },
+        { text: "黃欣雯坐在我對面，白恩棋坐在旁邊。桌上還有一本把我帶到這裡的謎題繪本。", characters: [hsinwen("left"), enchi()] },
+        { text: "門被推開。他站在夜色和燈光之間。" },
+        { speaker: "藍天和", text: "好久不見。", characters: c3("藍天和", "neutral", "soft", "neutral") },
+        { speaker: "主角", text: "阿和……" },
+        { text: "我終於叫出他的名字。他的名字與記憶不再模糊。" },
+        { speaker: "白恩棋", text: "好，我們四個人終於全員到齊！", characters: c3("白恩棋", "neutral", "soft", "surprised") },
+        { speaker: "藍天和", text: "抱歉我來晚了。我飛機改時間，差點趕不上。", characters: c3("藍天和") },
+        { speaker: "主角", text: "你真的從美國回來？" },
+        { speaker: "藍天和", text: "嗯，多虧了恩棋的安排。也感激你真的讀到了我的繪本……", characters: c3("藍天和") },
+        { speaker: "白恩棋", text: "阿和現在可是我理髮店裡的常客！", characters: c3("白恩棋", "neutral", "neutral", "soft") },
+        { text: "他看向桌上的謎題繪本。那些筆記全是我為了找他而留下的足跡。" },
+        { speaker: "主角", text: "能再見到你，真是太好了。" },
+        { speaker: "藍天和", text: "是呀。簡直像奇蹟一樣……這個世界這麼大，我們四個卻全都能在這裡相聚。", characters: c3("藍天和", "neutral", "sad", "soft") },
+        { text: "我的眼眶感到溫熱。" },
+        { speaker: "主角", text: "阿和……原來這些年你都沒有忘記我嗎？" },
+        { speaker: "藍天和", text: "嗯。雖然我在台灣只待了短短的幾年，但我真的有了最棒的童年。多虧了你們……", characters: c3("藍天和", "neutral", "sad", "neutral") },
+        { speaker: "白恩棋", text: "真是的！說什麼肉麻的話呢！", characters: c3("白恩棋", "neutral", "sad", "soft") },
+        { speaker: "黃欣雯", text: "阿和……真的很久不見了！感覺你變得很成熟沉穩了呢！", characters: c3("黃欣雯", "sad", "sad", "soft") },
+        { text: "我們更新了彼此的近況，得知阿和快要取得醫師執照了，但仍然沒有放棄繪本創作。我再次為打破茶杯的事道歉，並送他一個新的杯子，他微笑著接受了。" },
+        { text: "聊著聊著，阿和突然認真地看著我。" },
+        { speaker: "藍天和", text: "我最好的朋友……你願不願意，和我一起創作呢？", characters: c3("藍天和") },
+        { speaker: "主角", text: "嗯？我嗎？" },
+        { speaker: "藍天和", text: "關於我們的友誼、我們的故事，正要有新的篇章，對吧？你願意和我一起記錄下這一切嗎？", characters: c3("藍天和", "neutral", "surprised", "neutral") },
+        { speaker: "藍天和", text: "如果你願意跟我一起，把它用圖像、色彩、故事、謎題記錄下來……瑞德與布魯成長後的故事，就會真正地展現在眾人眼前。", characters: c3("藍天和", "neutral", "surprised", "neutral") },
+        { speaker: "主角", text: "當然！你給我的這趟旅程，我已經牢記在心了！" },
+        { speaker: "白恩棋", text: "如果要畫畫，也要算上我吧！", characters: c3("白恩棋", "neutral", "soft", "sad") },
+        { speaker: "黃欣雯", text: "如果可以，我也希望能用我的記憶力，幫忙讓故事更還原！", characters: c3("黃欣雯", "surprised", "soft", "sad") },
+        { speaker: "主角", text: "好啊！那我們四個一起合作！" },
+        { speaker: "藍天和", text: "能有你們這些好朋友，我真的……很幸福！", characters: c3("藍天和", "surprised", "sad", "soft") },
+        { text: "阿和從包包裡拿出一個小音樂盒，上面有一個小小的投影設備。" },
+        { speaker: "藍天和", text: "這個音樂盒叫做 Dreaming Box，裡面放了我們以前的照片。我們就一邊回顧，一邊發想下一部屬於我們四人的繪本，要有什麼樣的內容與謎題吧。", characters: c3("藍天和", "surprised", "soft", "soft") },
+        { text: "片尾影片、工作人員名單與片尾曲將在後續版本補上。" },
+      ],
+    },
+  ],
+  endingText: "我終於不只記得綽號，也記得你真正的名字。那張空了很多年的座位，終於有人回來了。",
+  hint: "四個人的座位全部亮起。屬於他們的新故事，正要開始。",
+};
 
 export const endingRoutes: Record<RouteEnding, EndingRoute> = {
-  "ending-1": {
-    albumEnding: "ending-1",
-    background: "bookstore",
-    title: "糖紙裡的初戀",
-    characters: c1,
-    scenes: [
-      {
-        id: "opening",
-        lines: [
-          { text: "書店裡很安靜。窗外的傍晚一點一點沉下來，玻璃映著街燈，也映著我自己的臉。" },
-          { text: "桌上放著一顆牛奶糖，旁邊是一隻黃色紙兔子。那一瞬間，我像是忽然回到小學教室。" },
-          { speaker: "黃欣雯", text: "你來了。", characters: withActive(c1, "黃欣雯") },
-          { speaker: "主角", text: "欣雯。" },
-          { speaker: "黃欣雯", text: "嗯。你還記得我。", characters: withActive(c1, "黃欣雯") },
-          { speaker: "主角", text: "看到妳的時候，好像就記起來了。妳很好認，眼睛，還有桌上的牛奶糖。" },
-          { text: "她笑了。那個笑容讓書店裡的燈變得更暖，像很多年前，她坐在我前面回頭看我的那一瞬間。" },
-        ],
-        choices: [
-          {
-            label: "理性一點：我們以前真的很熟嗎？",
-            lines: [
-              { speaker: "主角", text: "我們以前真的很熟嗎？" },
-              { speaker: "黃欣雯", text: "很熟。你坐我後面，常常拿筆戳我的椅背。可是你每次戳完，又會把橡皮擦借給我。", characters: withActive(c1, "黃欣雯") },
-              { speaker: "黃欣雯", text: "我記得你第一次轉來班上的樣子。你一出現，教室就變得比較吵，可是也變得比較有趣。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-          {
-            label: "熱情一點：我記得妳都偷偷請我吃糖！",
-            lines: [
-              { speaker: "主角", text: "我記得妳都偷偷請我吃糖！" },
-              { speaker: "黃欣雯", text: "你終於承認了。我以前還以為你根本沒發現。你每次吃完，糖紙都塞得亂七八糟。", characters: withActive(c1, "黃欣雯", "surprised") },
-              { text: "她說「可愛」的時候，眼睛微微彎起來。那顆牛奶糖好像還沒入口，就已經開始甜了。" },
-            ],
-          },
-          {
-            label: "溫柔坦率：其實我以前很喜歡妳。",
-            lines: [
-              { speaker: "主角", text: "其實我以前很喜歡妳。" },
-              { speaker: "黃欣雯", text: "……我有一點感覺。你每次要跟我說話，都會先假裝找東西。", characters: withActive(c1, "黃欣雯", "sad") },
-              { speaker: "黃欣雯", text: "現在我覺得，能再見到你很好。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-          {
-            label: "輕鬆玩笑：所以妳以前是在用牛奶糖收買我嗎？",
-            lines: [
-              { speaker: "主角", text: "所以妳以前是在用牛奶糖收買我嗎？" },
-              { speaker: "黃欣雯", text: "如果是的話，有成功嗎？那我以前應該常常讓你的人生很甜。", characters: withActive(c1, "黃欣雯", "surprised") },
-              { text: "那句話輕輕落在桌面上，像糖紙被攤開時發出的聲音。" },
-            ],
-          },
-        ],
-      },
-      {
-        id: "paper-rabbit",
-        lines: [
-          { speaker: "主角", text: "這隻兔子，是妳摺的？" },
-          { speaker: "黃欣雯", text: "嗯。我小時候很常摺。因為黃色很亮，放在課本裡，好像課本裡藏了一點太陽。", characters: withActive(c1, "黃欣雯") },
-          { text: "她把紙兔子推到我面前。兔子的耳朵輕輕翹著，像還在聽我們說話。" },
-        ],
-        choices: [
-          {
-            label: "理性一點：妳以前也會送別人紙兔子嗎？",
-            lines: [
-              { speaker: "黃欣雯", text: "會。有時候同學哭了，我會摺一隻給他。現在當老師，也偶爾會摺給小朋友。", characters: withActive(c1, "黃欣雯", "sad") },
-              { speaker: "主角", text: "很像妳。妳好像一直知道，怎麼把東西輕輕放到別人手裡。" },
-            ],
-          },
-          {
-            label: "熱情一點：我以前有沒有拿妳的兔子去玩？",
-            lines: [
-              { speaker: "黃欣雯", text: "有。你還讓牠參加跑步比賽，把牠放在鉛筆盒上，說那是牠的賽車。", characters: withActive(c1, "黃欣雯") },
-              { speaker: "主角", text: "那牠今天也算衛冕成功。" },
-            ],
-          },
-          {
-            label: "溫柔坦率：妳一直都很會照顧人。",
-            lines: [
-              { speaker: "主角", text: "妳一直都很會照顧人。" },
-              { speaker: "黃欣雯", text: "我只是比較容易注意到。誰今天沒說話，誰的鉛筆斷了，誰明明想加入大家卻站在旁邊。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-          {
-            label: "輕鬆玩笑：這隻兔子現在算老同學嗎？",
-            lines: [
-              { speaker: "黃欣雯", text: "算吧。牠可能比我們記得更多。而且牠是我摺的，會站在我這邊。", characters: withActive(c1, "黃欣雯", "surprised") },
-            ],
-          },
-        ],
-      },
-      {
-        id: "ahan",
-        lines: [
-          { speaker: "黃欣雯", text: "說起來，你以前和阿漢也很常混在一起。", characters: withActive(c1, "黃欣雯", "neutral") },
-          { speaker: "主角", text: "阿漢？" },
-          { speaker: "黃欣雯", text: "嗯。就是那個跑一下就滿頭汗，卻還是會跟著大家一起跑的男生。", characters: withActive(c1, "黃欣雯") },
-          { text: "那個綽號在我心裡輕輕晃了一下。像某段操場邊的夏天，還留在很遠的地方。" },
-        ],
-        choices: [
-          {
-            label: "理性一點：他以前坐在哪裡？",
-            lines: [
-              { speaker: "黃欣雯", text: "好像在比較前面的位置。他上課很安靜，可是老師一問問題，他通常答得出來。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-          {
-            label: "熱情一點：我以前是不是常拉他去玩？",
-            lines: [
-              { speaker: "黃欣雯", text: "很常。你一下課就往外衝，有時候還會回頭叫他快點。你跑太遠，最後又自己折回來。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-          {
-            label: "溫柔坦率：妳提到他時，我好像想起一點點了。",
-            lines: [
-              { speaker: "主角", text: "操場、汗，還有有人站在旁邊，很安靜地看著大家。" },
-              { speaker: "黃欣雯", text: "那很像他。你們一個很會往前衝，一個很會把事情想清楚，卻常常在一起。", characters: withActive(c1, "黃欣雯", "sad") },
-            ],
-          },
-          {
-            label: "輕鬆玩笑：他是不是常常被我拖去做奇怪的事？",
-            lines: [
-              { speaker: "黃欣雯", text: "你還挺有自覺的。你以前很會發明遊戲規則，而且每次都說得像正式比賽。", characters: withActive(c1, "黃欣雯") },
-            ],
-          },
-        ],
-      },
-      {
-        id: "ending",
-        lines: [
-          { speaker: "黃欣雯", text: "今天能這樣聊天，我很開心。你以前真的很耀眼。", characters: withActive(c1, "黃欣雯") },
-          { speaker: "黃欣雯", text: "我大部分時候坐在你前面。可是其實，我也常常在看你。", characters: withActive(c1, "黃欣雯", "sad") },
-          { text: "書店外的街燈亮了。玻璃窗映出我們並肩坐著的影子，中間隔著一隻紙兔子、一顆牛奶糖，和一段沒有說完的童年。" },
-          { speaker: "系統", text: "照片裡亮起第一個位置。黃色紙兔子靜靜躺在日記本最後一頁。" },
-        ],
-      },
-    ],
-    endingText: "我找回了坐在我前面的女孩。她記得牛奶糖，也記得我還沒學會好好說喜歡的年紀。",
-    hint: "日記本裡的照片只亮起一個位置。還有一些聲音，仍藏在沒有翻開的地方。",
-  },
-
-  "ending-2": {
-    albumEnding: "ending-2",
-    background: "bookstore",
-    title: "白色兔子與舊照片",
-    characters: c2,
-    scenes: [
-      {
-        id: "opening",
-        lines: [
-          { text: "這一次，桌上多了一隻白色紙兔子。兔子的耳朵很長，邊緣被彩色鉛筆描了一圈淡淡的藍。" },
-          { speaker: "白恩棋", text: "你真的來了。我還以為你看到我會認不出來。", characters: withActive(c2, "白恩棋", "surprised") },
-          { speaker: "主角", text: "白恩棋？" },
-          { speaker: "白恩棋", text: "答對。雖然本人現在比小時候高很多，值得掌聲鼓勵。", characters: withActive(c2, "白恩棋", "surprised") },
-          { speaker: "黃欣雯", text: "他現在在美國當美髮師。", characters: withActive(c2, "黃欣雯") },
-          { speaker: "白恩棋", text: "每天都在用剪刀拯救世界。還有染髮劑。", characters: withActive(c2, "白恩棋") },
-        ],
-        choices: [
-          {
-            label: "理性一點：你怎麼會去美國？",
-            lines: [
-              { speaker: "白恩棋", text: "家裡後來搬過去。一開始很不習慣，英文也講得七零八落。畫畫救了我一點吧。", characters: withActive(c2, "白恩棋", "sad") },
-              { speaker: "白恩棋", text: "我喜歡看一個人換了髮型之後，像終於認出自己。", characters: withActive(c2, "白恩棋") },
-            ],
-          },
-          {
-            label: "熱情一點：你現在也變太高了吧！",
-            lines: [
-              { speaker: "白恩棋", text: "謝謝，我小時候欠下的身高，長大一次討回來。以前排隊都站第一個，現在換我擋別人視線。", characters: withActive(c2, "白恩棋", "surprised") },
-            ],
-          },
-          {
-            label: "溫柔坦率：我好像以前沒有好好注意過你。",
-            lines: [
-              { speaker: "白恩棋", text: "你有注意到啦。有人搶我鉛筆盒，你會直接衝過去搶回來。很粗魯，但很有效。", characters: withActive(c2, "白恩棋", "sad") },
-              { speaker: "黃欣雯", text: "你以前就是這樣。很熱心，但很不會說好聽話。", characters: withActive(c2, "黃欣雯") },
-            ],
-          },
-          {
-            label: "輕鬆玩笑：你現在看起來像會幫明星剪頭髮的人。",
-            lines: [
-              { speaker: "白恩棋", text: "謝謝，我決定把這句話寫進履歷。以前是對顏色有興趣，後來發現頭髮也可以很有顏色。", characters: withActive(c2, "白恩棋") },
-            ],
-          },
-        ],
-      },
-      {
-        id: "colors",
-        lines: [
-          { speaker: "黃欣雯", text: "恩棋以前很會畫畫。美術課只要發色紙，他眼睛就會亮起來。", characters: withActive(c2, "黃欣雯") },
-          { speaker: "白恩棋", text: "結果那時候大家只覺得我衣服太亮。亮橘色、亮綠色、很誇張的藍。", characters: withActive(c2, "白恩棋", "surprised") },
-        ],
-        choices: [
-          { label: "理性一點：你以前最喜歡畫什麼？", lines: [{ speaker: "白恩棋", text: "人物，還有動物。不過我畫的人都穿得很花，跳舞的人尤其漂亮，顏色會跟著動。", characters: withActive(c2, "白恩棋") }] },
-          { label: "熱情一點：亮橘色聽起來超醒目。", lines: [{ speaker: "白恩棋", text: "醒目到老師點名不用看座位表。你現在說帥太晚了，不過我收下。", characters: withActive(c2, "白恩棋") }] },
-          { label: "溫柔坦率：被笑的時候，應該很不好受吧。", lines: [{ speaker: "白恩棋", text: "有時候會。小學生笑人的時候很直接，連包裝都沒有。後來我長高了，聲音也變大了，但我還是喜歡鮮豔的東西。", characters: withActive(c2, "白恩棋", "sad") }] },
-          { label: "輕鬆玩笑：所以你小時候是行走的彩色鉛筆盒？", lines: [{ speaker: "白恩棋", text: "非常精準。而且是二十四色，不是十二色。那叫美感秩序。", characters: withActive(c2, "白恩棋", "surprised") }] },
-        ],
-      },
-      {
-        id: "ahan",
-        lines: [
-          { speaker: "白恩棋", text: "對了，你還記得阿漢嗎？跑一下就滿頭汗，可是每次都還是會來。", characters: withActive(c2, "白恩棋", "neutral") },
-          { speaker: "黃欣雯", text: "他功課很好，字也寫得漂亮。那次生日，我們不是去過他家嗎？", characters: withActive(c2, "黃欣雯", "neutral") },
-          { text: "杯子。這個詞像一枚小石子，落進心裡某個很深的地方，水面晃了一下，卻還沒有完全映出形狀。" },
-        ],
-        choices: [
-          { label: "理性一點：那次生日，你們還記得哪些細節？", lines: [{ speaker: "黃欣雯", text: "他家客廳很大。我帶了紙兔子，恩棋帶了自己畫的卡片，你大概負責把氣氛弄得很吵。", characters: withActive(c2, "黃欣雯") }] },
-          { label: "熱情一點：等等，我們小時候居然有去同學家慶生？", lines: [{ speaker: "白恩棋", text: "有，而且你那天超興奮。阿漢帶我們看他的書和玩具，他有一些很漂亮的繪本。", characters: withActive(c2, "白恩棋") }] },
-          { label: "溫柔坦率：聽起來，那天對他很重要。", lines: [{ speaker: "黃欣雯", text: "應該很重要吧。他那天雖然有點緊張，可是一直笑，對喜歡的東西也很珍惜。", characters: withActive(c2, "黃欣雯", "sad") }] },
-          { label: "輕鬆玩笑：所以那天到底誰吃最多蛋糕？", lines: [{ speaker: "白恩棋", text: "這題我可以作證，應該是你。小學生生日派對的最高榮譽，就是蛋糕被吃光。", characters: withActive(c2, "白恩棋") }] },
-        ],
-      },
-      {
-        id: "care",
-        lines: [
-          { speaker: "白恩棋", text: "我小時候其實滿常被你們照顧的。你和阿漢，欣雯也會。", characters: withActive(c2, "白恩棋", "sad") },
-          { speaker: "黃欣雯", text: "恩棋以前很安靜。有些人會拿他的東西開玩笑。", characters: withActive(c2, "黃欣雯") },
-        ],
-        choices: [
-          { label: "理性一點：阿漢會怎麼幫你？", lines: [{ speaker: "白恩棋", text: "他會把東西撿回來。不太罵人，也不太吵，就只是撿回來放到我桌上。可是很有用。", characters: withActive(c2, "白恩棋") }] },
-          { label: "熱情一點：那我呢？我是不是直接衝出去？", lines: [{ speaker: "白恩棋", text: "你比較像球飛出去。直接把東西搶回來，再塞給我。小學生的溫柔，有時候長得很粗魯。", characters: withActive(c2, "白恩棋") }] },
-          { label: "溫柔坦率：謝謝你還記得這些。", lines: [{ speaker: "白恩棋", text: "我記得啊。小時候被誰笑、被誰幫過，其實都會留下來。", characters: withActive(c2, "白恩棋") }] },
-          { label: "輕鬆玩笑：所以我以前是熱血笨蛋型？", lines: [{ speaker: "白恩棋", text: "這是你自己說的，我沒有說。阿漢應該會說得比較委婉：他只是比較有行動力。", characters: withActive(c2, "白恩棋", "surprised") }] },
-        ],
-      },
-      {
-        id: "ending",
-        lines: [
-          { speaker: "白恩棋", text: "今天這樣聊，感覺很多畫面都回來了。", characters: withActive(c2, "白恩棋") },
-          { speaker: "黃欣雯", text: "像把舊照片一張一張擦乾淨。而且我們現在還坐在一起。", characters: withActive(c2, "黃欣雯") },
-          { text: "桌上的黃色紙兔子和白色紙兔子靠在一起。窗外的夜色漸漸深了，三個人的笑聲讓那張舊照片多亮了一些。" },
-          { speaker: "系統", text: "照片裡亮起三個位置。最旁邊仍有一張空位，椅背上像落著一點淡淡的藍。" },
-        ],
-      },
-    ],
-    endingText: "我找回了兩位老同學，也找回了一些下課後的聲音。舊照片還有幾處模糊，可燈已經亮起來了。",
-    hint: "三個人的座位亮了起來。黃色紙兔子和白色紙兔子靠在一起。",
-  },
-
-  "ending-2-branch": {
-    albumEnding: "ending-2",
-    background: "bookstore",
-    title: "白色兔子與舊照片",
-    characters: c2,
-    scenes: [],
-    endingText: "我找回了兩位老同學，也找回了一些下課後的聲音。舊照片還有幾處模糊，可燈已經亮起來了。",
-    hint: "三個人的座位亮了起來。黃色紙兔子和白色紙兔子靠在一起。",
-  },
-
-  "ending-3": {
-    albumEnding: "ending-3",
-    background: "cafe",
-    title: "喊出你的名字",
-    characters: c3,
-    scenes: [
-      {
-        id: "opening",
-        lines: [
-          { text: "這一次，我終於想起來了。不是只有阿漢，不是只有那個跑一下就滿頭汗，卻還是會跟著大家一起跑的男孩。我想起他的名字。藍天和。" },
-          { text: "咖啡店的門鈴響起時，我握緊了手中的繪本。桌上放著兩隻紙兔子，一黃一白，還有一本把我帶到這裡的謎題繪本。" },
-          { speaker: "藍天和", text: "好久不見。", characters: withActive(c3, "藍天和", "sad") },
-          { speaker: "主角", text: "藍天和。" },
-          { speaker: "白恩棋", text: "好，四個人終於到齊。我先聲明，我只是負責牽線，不負責控制場面。", characters: withActive(c3, "白恩棋", "surprised") },
-          { speaker: "藍天和", text: "也剛好，那本書終於被你讀到了。", characters: withActive(c3, "藍天和", "soft") },
-        ],
-        choices: [
-          { label: "理性一點：那本繪本，是你畫的嗎？", lines: [{ speaker: "藍天和", text: "嗯。我把一些線索藏在裡面。如果你還記得，就會走到這裡。它也許是一條路，可以從故事走回你身邊。", characters: withActive(c3, "藍天和", "neutral") }] },
-          { label: "熱情一點：你也太會藏了吧！害我差點找不到！", lines: [{ speaker: "藍天和", text: "抱歉。可是你以前也會跑回來等我，所以我才一直記得。", characters: withActive(c3, "藍天和", "surprised") }] },
-          { label: "溫柔坦率：我一直很想你。", lines: [{ speaker: "藍天和", text: "我也是。我沒有忘，只是一直不知道，要怎麼回到你面前。", characters: withActive(c3, "藍天和", "sad") }, { speaker: "白恩棋", text: "所以他畫了一整本繪本。很浪漫，也很麻煩。", characters: withActive(c3, "白恩棋", "surprised") }] },
-          { label: "輕鬆玩笑：你約人的方式也太繞了。", lines: [{ speaker: "白恩棋", text: "很藍天和。把一句好久不見做成大型解謎活動。", characters: withActive(c3, "白恩棋", "surprised") }, { speaker: "藍天和", text: "我不知道你會不會回。", characters: withActive(c3, "藍天和", "sad") }] },
-        ],
-      },
-      {
-        id: "picture-book",
-        lines: [
-          { speaker: "主角", text: "你現在在念醫學？" },
-          { speaker: "藍天和", text: "嗯。可是我以前說過想畫繪本，現在也想。", characters: withActive(c3, "藍天和", "neutral") },
-        ],
-        choices: [
-          { label: "理性一點：那你還會繼續畫嗎？", lines: [{ speaker: "藍天和", text: "會，只是很慢。我還在學，學著讓自己的故事被看見。", characters: withActive(c3, "藍天和", "neutral") }] },
-          { label: "熱情一點：醫學生還能畫出這種繪本，太誇張了吧。", lines: [{ speaker: "黃欣雯", text: "那本書很像你。安靜，可是仔細看會發現很多東西。", characters: withActive(c3, "黃欣雯", "soft") }] },
-          { label: "溫柔坦率：我很高興你還把畫畫留著。", lines: [{ speaker: "藍天和", text: "畫畫的時候，我會想起以前。欣雯的紙兔子、恩棋的生日卡，我都有留著。", characters: withActive(c3, "藍天和", "sad") }, { speaker: "白恩棋", text: "完了，這句太重了。我今天髮型很完整，先不要讓我哭。", characters: withActive(c3, "白恩棋", "surprised") }] },
-          { label: "輕鬆玩笑：所以你白天救人，晚上出謎題？", lines: [{ speaker: "白恩棋", text: "他已經成功讓我們三個腦袋打結。下次請出簡單一點。", characters: withActive(c3, "白恩棋", "surprised") }] },
-        ],
-      },
-      {
-        id: "cup",
-        lines: [
-          { speaker: "藍天和", text: "我帶了一樣東西。", characters: withActive(c3, "藍天和", "neutral") },
-          { text: "他從包包裡拿出一個小盒子。盒子裡是一個藍色杯子，杯身有裂痕，被仔細地修補過。" },
-          { speaker: "主角", text: "那個杯子……" },
-        ],
-        choices: [
-          { label: "理性一點：你一直留著它？", lines: [{ speaker: "藍天和", text: "嗯。搬去美國的時候也帶著。它讓我記得，我在台灣有很重要的朋友。", characters: withActive(c3, "藍天和", "sad") }] },
-          { label: "熱情一點：你居然把它黏回去了？", lines: [{ speaker: "藍天和", text: "黏得很醜。可是那天之後，我以為再也見不到你了。", characters: withActive(c3, "藍天和", "sad") }] },
-          { label: "溫柔坦率：對不起，我一直欠你這句話。", lines: [{ speaker: "主角", text: "我那時候推倒你，打破你的杯子。後來又沒來得及跟你道歉。" }, { speaker: "藍天和", text: "我等到了。現在說出口了。", characters: withActive(c3, "藍天和", "soft") }] },
-          { label: "輕鬆玩笑：它看起來比我們幾個還會撐。", lines: [{ speaker: "白恩棋", text: "確實。小學同學會 MVP：藍色杯子。", characters: withActive(c3, "白恩棋", "surprised") }, { speaker: "藍天和", text: "我修了很久。也許是因為我不想丟掉。", characters: withActive(c3, "藍天和", "sad") }] },
-        ],
-      },
-      {
-        id: "park",
-        lines: [
-          { speaker: "藍天和", text: "我也記得你受傷那天。", characters: withActive(c3, "藍天和", "sad") },
-          { text: "那天的公園很熱。我從遊具上摔下來，手臂出了血。只有他先蹲下來，用發抖的手替我壓住傷口。" },
-        ],
-        choices: [
-          { label: "理性一點：你那時候為什麼留下來？", lines: [{ speaker: "藍天和", text: "因為你在流血。我只是覺得，如果我也走了，你會很害怕。", characters: withActive(c3, "藍天和", "sad") }] },
-          { label: "熱情一點：所以我們就是從那天變成朋友的？", lines: [{ speaker: "藍天和", text: "應該是。你每次都說體能訓練很公平，可是比作業可怕。", characters: withActive(c3, "藍天和", "surprised") }] },
-          { label: "溫柔坦率：謝謝你當年沒有丟下我。", lines: [{ speaker: "藍天和", text: "也謝謝你後來沒有丟下我。你開始等我跑完，開始把我拉進大家裡面。", characters: withActive(c3, "藍天和", "soft") }] },
-          { label: "輕鬆玩笑：我那時候是不是嚇到臉都白了？", lines: [{ speaker: "藍天和", text: "很白。可是你後來還是很愛跑，這句很像你以前會說的話。", characters: withActive(c3, "藍天和", "surprised") }] },
-        ],
-      },
-      {
-        id: "reunion",
-        lines: [
-          { speaker: "黃欣雯", text: "所以，這算小學同學會成功嗎？", characters: withActive(c3, "黃欣雯", "surprised") },
-          { speaker: "白恩棋", text: "當然成功。四個人到齊，還解開多年謎題，咖啡也沒有灑。", characters: withActive(c3, "白恩棋", "surprised") },
-          { speaker: "藍天和", text: "謝謝你們來。", characters: withActive(c3, "藍天和", "soft") },
-        ],
-        choices: [
-          { label: "理性一點：直接開群組吧。", lines: [{ speaker: "白恩棋", text: "太好了，科技終於進場。群組名稱就叫紙兔子？", characters: withActive(c3, "白恩棋", "surprised") }, { speaker: "黃欣雯", text: "我喜歡。", characters: withActive(c3, "黃欣雯", "soft") }] },
-          { label: "熱情一點：直接約！我一定來！", lines: [{ speaker: "藍天和", text: "可是這次可以走慢一點。", characters: withActive(c3, "藍天和", "sad") }, { speaker: "主角", text: "可以。我會等你。" }] },
-          { label: "溫柔坦率：只要是你們，我會想辦法來。", lines: [{ speaker: "藍天和", text: "我可以負責不再把邀請藏進謎題裡。", characters: withActive(c3, "藍天和", "soft") }, { speaker: "白恩棋", text: "這個進步很大。", characters: withActive(c3, "白恩棋", "surprised") }] },
-          { label: "輕鬆玩笑：至少先給提示，不要直接出題。", lines: [{ speaker: "藍天和", text: "下次我直接寫：要不要見面？", characters: withActive(c3, "藍天和", "surprised") }, { speaker: "白恩棋", text: "恭喜，藍天和學會直球了。", characters: withActive(c3, "白恩棋", "surprised") }] },
-        ],
-      },
-      {
-        id: "ending",
-        lines: [
-          { text: "藍天和把修補過的藍色杯子放在桌中央。黃欣雯把黃色紙兔子放在杯子旁邊。白恩棋在白色紙兔子的耳朵上畫了一點藍。" },
-          { text: "最後，我們拍了一張照片。快門聲響起時，日記本裡那張空白照片終於顯影。四個位置都亮了。" },
-          { speaker: "黃欣雯", text: "下次見面，我再帶紙兔子。", characters: withActive(c3, "黃欣雯", "soft") },
-          { speaker: "白恩棋", text: "我帶美國伴手禮，還有免費髮型諮詢券一張。", characters: withActive(c3, "白恩棋", "surprised") },
-          { speaker: "藍天和", text: "我帶新的故事。出現就好。", characters: withActive(c3, "藍天和", "soft") },
-          { speaker: "系統", text: "照片裡四個位置全部亮起。日記本最後一頁浮現四個名字：黃欣雯、白恩棋、藍天和，還有我自己。" },
-        ],
-      },
-    ],
-    endingText: "我終於不只記得綽號，也記得你真正的名字。那張空了很多年的座位，終於有人回來了。",
-    hint: "原來有些重逢，需要先把名字想起來。",
-  },
+  "ending-1": ending1,
+  "ending-2": ending2,
+  "ending-2-branch": ending2,
+  "ending-3": ending3,
 };
-
-endingRoutes["ending-2-branch"].scenes = endingRoutes["ending-2"].scenes;
