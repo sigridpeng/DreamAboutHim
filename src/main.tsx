@@ -155,6 +155,8 @@ function App() {
     date: "",
   });
   const [diaryModal, setDiaryModal] = useState("");
+  const [isHintsOpen, setIsHintsOpen] = useState(false);
+  const [isMoreGamesOpen, setIsMoreGamesOpen] = useState(false);
   const [isRouteTransitioning, setIsRouteTransitioning] = useState(false);
   const [routeEnding, setRouteEnding] = useState<RouteEnding>("ending-1");
   const [nodeId, setNodeId] = useState(story.startNode);
@@ -180,6 +182,7 @@ function App() {
   const lockPassword = lockIndices
     .map((letterIndex, wheelIndex) => lockWheels[wheelIndex][letterIndex])
     .join("");
+  const currentHint = getCurrentHint(stage, isIntroSolved, pageIndex, isWritingDiary, diaryStep);
 
   useEffect(() => {
     let isCancelled = false;
@@ -498,6 +501,8 @@ function App() {
     setDiaryStep(0);
     setDiaryInputs({ count: "", yellow: "", white: "", person: "", date: "" });
     setDiaryModal("");
+    setIsHintsOpen(false);
+    setIsMoreGamesOpen(false);
     setNodeId(story.startNode);
     setFlags({});
     setKeyword("");
@@ -543,7 +548,11 @@ function App() {
         )}
         {stage === "cover" && (
           <section className={`cover-screen ${isIntroSolved ? "intro-solved" : "intro-active"} ${isIntroTransitioning ? "intro-transitioning" : ""} ${isUnlocking ? "unlocking" : ""}`}>
-          <AppChrome variant="menu" />
+          <AppChrome
+            variant="menu"
+            onOpenHints={() => setIsHintsOpen(true)}
+            onOpenMoreGames={() => setIsMoreGamesOpen(true)}
+          />
           {(!isIntroSolved || isIntroTransitioning) && (
             <form className="intro-layer" onSubmit={submitIntroAnswer}>
               <div className="hidden-item" aria-label="隱藏物件" />
@@ -621,7 +630,11 @@ function App() {
 
         {stage === "diary" && (
           <section className="diary-screen">
-          <AppChrome variant="menu" />
+          <AppChrome
+            variant="menu"
+            onOpenHints={() => setIsHintsOpen(true)}
+            onOpenMoreGames={() => setIsMoreGamesOpen(true)}
+          />
           <div className="diary-shell">
             <header className="topbar">
               <div>
@@ -723,6 +736,21 @@ function App() {
         {stage === "ending" && currentEnding && (
           <EndingScreen ending={currentEnding} unlockedEndings={unlockedEndings} onRestart={restart} onLoad={loadGame} />
         )}
+
+        {isHintsOpen && (
+          <div className="modal-backdrop" role="presentation">
+            <section className="password-modal hint-modal" role="dialog" aria-modal="true" aria-labelledby="hint-title">
+              <button className="modal-close" type="button" onClick={() => setIsHintsOpen(false)} aria-label="關閉提示">
+                <X size={18} />
+              </button>
+              <p className="eyebrow">Hints</p>
+              <h2 id="hint-title">提示</h2>
+              <p>{currentHint}</p>
+            </section>
+          </div>
+        )}
+
+        {isMoreGamesOpen && <MoreGamesScreen onClose={() => setIsMoreGamesOpen(false)} />}
       </main>
     </div>
   );
@@ -1213,6 +1241,8 @@ function NovelScreen({
 
 interface AppChromeProps {
   variant: "menu" | "novel";
+  onOpenHints?: () => void;
+  onOpenMoreGames?: () => void;
 }
 
 function getSpeakerClassName(speaker: string) {
@@ -1222,7 +1252,35 @@ function getSpeakerClassName(speaker: string) {
   return "speaker-name";
 }
 
-function AppChrome({ variant }: AppChromeProps) {
+function getCurrentHint(
+  stage: GameStage,
+  isIntroSolved: boolean,
+  pageIndex: number,
+  isWritingDiary: boolean,
+  diaryStep: number,
+) {
+  if (stage === "cover" && !isIntroSolved) {
+    return "仔細觀察入口中央的圖像輪廓，它們共同組成了進入回憶的答案。";
+  }
+  if (stage === "cover") {
+    return "日記鎖有三個字母轉輪。答案與這場夢裡反覆出現的角色有關。";
+  }
+  if (pageIndex < 2) {
+    return "先閱讀目前的日記內容與照片線索，再翻到最後一頁。";
+  }
+  if (!isWritingDiary) {
+    return "最後一頁還沒有寫完。按下「寫日記」，試著記錄這次聚會。";
+  }
+  if (diaryStep === 0) {
+    return "聚會人數包含主角自己。記起的人越多，照片就會越完整。";
+  }
+  if (diaryStep === 1) {
+    return "寫下黃色兔子與白色兔子的真正姓名；若還有第四個人，也別忘了你們談起的老朋友。";
+  }
+  return "最後的日期藏在一路找回的約定裡。選擇真正屬於重逢的那一天。";
+}
+
+function AppChrome({ variant, onOpenHints, onOpenMoreGames }: AppChromeProps) {
   return (
     <>
       <div className="brand-lockup" aria-label="The Dream of Forgotten Memories">
@@ -1231,17 +1289,63 @@ function AppChrome({ variant }: AppChromeProps) {
       </div>
       {variant === "menu" && (
         <aside className="side-actions" aria-label="側邊選單">
-          <button type="button">
+          <button type="button" onClick={onOpenHints}>
             <Settings size={22} />
-            Settings
+            Hints
           </button>
-          <button type="button">
+          <button type="button" onClick={onOpenMoreGames}>
             <Images size={22} />
-            Gallery
+            More Games
           </button>
         </aside>
       )}
     </>
+  );
+}
+
+function MoreGamesScreen({ onClose }: { onClose: () => void }) {
+  const works = [
+    {
+      year: "2023",
+      title: "童話之約",
+      subtitle: "2023 GPA 實境解謎",
+      image: `${ASSET_BASE}/works/fairy-tale-promise.jpg`,
+      url: "https://popworld.cc/guide/14162/preview",
+    },
+    {
+      year: "2025",
+      title: "命懸一線",
+      subtitle: "懸窩UZU 雙人劇本殺",
+      image: `${ASSET_BASE}/works/close-call.webp`,
+      url: "https://www.uzu-app.com/zh-TW/scenario/8404",
+    },
+  ];
+
+  return (
+    <section className="more-games-screen" aria-labelledby="more-games-title">
+      <AppChrome variant="novel" />
+      <div className="more-games-heading">
+        <h1 id="more-games-title">Classam&apos;s Works</h1>
+        <p>Author Works</p>
+        <span aria-hidden="true">✦</span>
+      </div>
+
+      <div className="works-list">
+        {works.map((work) => (
+          <a className="work-banner" href={work.url} key={work.title} rel="noreferrer" target="_blank">
+            <span className="work-image-frame">
+              <img src={work.image} alt={`${work.title}作品首頁圖`} />
+            </span>
+            <span className="work-copy">
+              <strong>{work.title}</strong>
+              <small>{work.subtitle}</small>
+              <em>{work.year}</em>
+            </span>
+          </a>
+        ))}
+      </div>
+      <button className="more-games-close" type="button" onClick={onClose}>back</button>
+    </section>
   );
 }
 
