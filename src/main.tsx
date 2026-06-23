@@ -20,11 +20,12 @@ import {
 } from "lucide-react";
 import { story } from "./data";
 import { endingRoutes, type EndingRouteLine, type RouteEnding } from "./endingRoutes";
-import type { Ending, FlagMap, GameStage, SaveData, SceneCharacter, VNNode } from "./types";
+import type { Ending, FlagMap, GameStage, PersistentProgress, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
+const PROGRESS_KEY = "dream-about-him-progress";
 const ASSET_BASE = "/DreamAboutHim/assets";
 const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
 const BGM_VOLUME = 0.38;
@@ -126,7 +127,36 @@ const imageAssets = [
 
 const preloadAssets = [...new Set(imageAssets), BGM_SRC];
 
+function readPersistentProgress(): PersistentProgress {
+  const emptyProgress: PersistentProgress = {
+    version: 1,
+    introSolved: false,
+    diaryUnlocked: false,
+    unlockedEndings: [],
+  };
+
+  try {
+    const rawProgress = localStorage.getItem(PROGRESS_KEY);
+    if (!rawProgress) return emptyProgress;
+
+    const progress = JSON.parse(rawProgress) as Partial<PersistentProgress>;
+    if (progress.version !== 1) return emptyProgress;
+
+    return {
+      version: 1,
+      introSolved: Boolean(progress.introSolved || progress.diaryUnlocked),
+      diaryUnlocked: Boolean(progress.diaryUnlocked),
+      unlockedEndings: Array.isArray(progress.unlockedEndings)
+        ? progress.unlockedEndings.filter((ending): ending is string => typeof ending === "string")
+        : [],
+    };
+  } catch {
+    return emptyProgress;
+  }
+}
+
 function App() {
+  const initialProgress = useMemo(readPersistentProgress, []);
   const [loadingRun, setLoadingRun] = useState(0);
   const [loadingState, setLoadingState] = useState({
     error: "",
@@ -135,8 +165,9 @@ function App() {
     status: "正在整理回憶碎片",
     total: preloadAssets.length + 1,
   });
-  const [stage, setStage] = useState<GameStage>("cover");
-  const [isIntroSolved, setIsIntroSolved] = useState(false);
+  const [stage, setStage] = useState<GameStage>(initialProgress.diaryUnlocked ? "diary" : "cover");
+  const [isIntroSolved, setIsIntroSolved] = useState(initialProgress.introSolved);
+  const [isDiaryUnlocked, setIsDiaryUnlocked] = useState(initialProgress.diaryUnlocked);
   const [isIntroTransitioning, setIsIntroTransitioning] = useState(false);
   const [introAnswer, setIntroAnswer] = useState("");
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
@@ -156,12 +187,13 @@ function App() {
   });
   const [diaryModal, setDiaryModal] = useState("");
   const [isHintsOpen, setIsHintsOpen] = useState(false);
+  const [isResetProgressOpen, setIsResetProgressOpen] = useState(false);
   const [isMoreGamesOpen, setIsMoreGamesOpen] = useState(false);
   const [isRouteTransitioning, setIsRouteTransitioning] = useState(false);
   const [routeEnding, setRouteEnding] = useState<RouteEnding>("ending-1");
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
-  const [unlockedEndings, setUnlockedEndings] = useState<string[]>([]);
+  const [unlockedEndings, setUnlockedEndings] = useState<string[]>(initialProgress.unlockedEndings);
   const [keyword, setKeyword] = useState("");
   const [keywordError, setKeywordError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
@@ -183,6 +215,20 @@ function App() {
     .map((letterIndex, wheelIndex) => lockWheels[wheelIndex][letterIndex])
     .join("");
   const currentHint = getCurrentHint(stage, isIntroSolved, pageIndex, isWritingDiary, diaryStep);
+
+  useEffect(() => {
+    const progress: PersistentProgress = {
+      version: 1,
+      introSolved: isIntroSolved,
+      diaryUnlocked: isDiaryUnlocked,
+      unlockedEndings,
+    };
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    } catch {
+      // The game remains playable when browser storage is unavailable.
+    }
+  }, [isDiaryUnlocked, isIntroSolved, unlockedEndings]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -310,6 +356,7 @@ function App() {
     if (await matchesHash(lockPassword, DIARY_LOCK_HASH, "upper")) {
       setPasswordError("");
       setIsPasswordOpen(false);
+      setIsDiaryUnlocked(true);
       setIsUnlocking(true);
       window.setTimeout(() => {
       setIsUnlocking(false);
@@ -487,8 +534,7 @@ function App() {
   }
 
   function restart() {
-    setStage("cover");
-    setIsIntroSolved(false);
+    setStage(isDiaryUnlocked ? "diary" : "cover");
     setIsIntroTransitioning(false);
     setIntroAnswer("");
     setIsPasswordOpen(false);
@@ -502,12 +548,19 @@ function App() {
     setDiaryInputs({ count: "", yellow: "", white: "", person: "", date: "" });
     setDiaryModal("");
     setIsHintsOpen(false);
+    setIsResetProgressOpen(false);
     setIsMoreGamesOpen(false);
     setNodeId(story.startNode);
     setFlags({});
     setKeyword("");
     setKeywordError("");
     setSaveMessage("");
+  }
+
+  function resetProgress() {
+    localStorage.removeItem(PROGRESS_KEY);
+    localStorage.removeItem(SAVE_KEY);
+    window.location.reload();
   }
 
   if (!loadingState.isReady) {
@@ -746,6 +799,31 @@ function App() {
               <p className="eyebrow">Hints</p>
               <h2 id="hint-title">提示</h2>
               <p>{currentHint}</p>
+              <button
+                className="reset-progress-button"
+                type="button"
+                onClick={() => {
+                  setIsHintsOpen(false);
+                  setIsResetProgressOpen(true);
+                }}
+              >
+                <RotateCcw size={17} />
+                重置進度
+              </button>
+            </section>
+          </div>
+        )}
+
+        {isResetProgressOpen && (
+          <div className="modal-backdrop" role="presentation">
+            <section className="password-modal reset-progress-modal" role="dialog" aria-modal="true" aria-labelledby="reset-progress-title">
+              <p className="eyebrow">Reset Progress</p>
+              <h2 id="reset-progress-title">確定要重置嗎？</h2>
+              <p>入口密碼、日記鎖、已解鎖相片與快速存檔都會被清除。</p>
+              <div className="reset-progress-actions">
+                <button type="button" onClick={() => setIsResetProgressOpen(false)}>取消</button>
+                <button className="confirm-reset" type="button" onClick={resetProgress}>確認重置</button>
+              </div>
             </section>
           </div>
         )}

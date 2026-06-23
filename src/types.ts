@@ -71,3 +71,10 @@ export interface SaveData {
   unlockedEndings: string[];
   timestamp: number;
 }
+
+export interface PersistentProgress {
+  version: 1;
+  introSolved: boolean;
+  diaryUnlocked: boolean;
+  unlockedEndings: string[];
+}
