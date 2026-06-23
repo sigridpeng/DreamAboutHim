@@ -1454,6 +1454,53 @@ p {
   z-index: 20;
 }
 
+.author-tabs {
+  display: flex;
+  gap: 20px;
+  position: absolute;
+  right: 54px;
+  top: 42px;
+  z-index: 22;
+}
+
+.author-tabs button {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: rgba(244, 211, 155, 0.72);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05cqw;
+  min-height: 44px;
+  padding: 0 10px 8px;
+  position: relative;
+}
+
+.author-tabs button::after {
+  background: #efbd68;
+  bottom: 0;
+  content: "";
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 180ms ease;
+  width: 100%;
+}
+
+.author-tabs button:hover:not(:disabled) {
+  background: transparent;
+  color: #f3d59d;
+  transform: none;
+}
+
+.author-tabs button.is-active {
+  color: #f3d59d;
+}
+
+.author-tabs button.is-active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
 .more-games-heading {
   left: 50%;
   position: absolute;
@@ -1571,6 +1618,76 @@ p {
 
 .more-games-close:hover:not(:disabled) {
   transform: translateX(-50%) translateY(-1px);
+}
+
+.author-info-page {
+  left: 50%;
+  position: absolute;
+  text-align: center;
+  top: 180px;
+  transform: translateX(-50%);
+  width: 880px;
+  z-index: 3;
+}
+
+.author-info-page > .eyebrow {
+  color: #f1c982;
+  font-size: 0.95cqw;
+  margin-bottom: 12px;
+}
+
+.author-info-page h1 {
+  color: #f1c982;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.6cqw;
+  font-weight: 400;
+  margin: 0;
+}
+
+.author-info-body {
+  border-bottom: 1px solid rgba(241, 201, 130, 0.28);
+  border-top: 1px solid rgba(241, 201, 130, 0.28);
+  color: rgba(255, 239, 214, 0.82);
+  font-family: Georgia, "Noto Serif TC", serif;
+  font-size: 1.22cqw;
+  line-height: 1.9;
+  margin-top: 42px;
+  padding: 36px 48px;
+  text-align: left;
+}
+
+.author-info-body p {
+  margin: 0 0 18px;
+}
+
+.author-info-body p:last-child {
+  margin-bottom: 0;
+}
+
+.contact-list {
+  margin: 0;
+}
+
+.contact-list div {
+  align-items: baseline;
+  border-bottom: 1px solid rgba(241, 201, 130, 0.16);
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 180px 1fr;
+  padding: 16px 0;
+}
+
+.contact-list div:last-child {
+  border-bottom: 0;
+}
+
+.contact-list dt {
+  color: #f1c982;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.contact-list dd {
+  margin: 0;
 }
 
 .thank-you-screen {

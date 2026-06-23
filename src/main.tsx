@@ -1304,6 +1304,7 @@ function AppChrome({ variant, onOpenHints, onOpenMoreGames }: AppChromeProps) {
 }
 
 function MoreGamesScreen({ onClose }: { onClose: () => void }) {
+  type AuthorSection = "works" | "about" | "contact" | "eggs";
   const works = [
     {
       year: "2023",
@@ -1320,31 +1321,98 @@ function MoreGamesScreen({ onClose }: { onClose: () => void }) {
       url: "https://www.uzu-app.com/zh-TW/scenario/8404",
     },
   ];
+  const [activeSection, setActiveSection] = useState<AuthorSection>("works");
+  const sections: Array<{ id: AuthorSection; label: string }> = [
+    { id: "works", label: "Author Works" },
+    { id: "about", label: "About Author" },
+    { id: "contact", label: "Contact" },
+    { id: "eggs", label: "Easter Eggs" },
+  ];
 
   return (
-    <section className="more-games-screen" aria-labelledby="more-games-title">
+    <section className="more-games-screen" aria-label="Author pages">
       <AppChrome variant="novel" />
-      <div className="more-games-heading">
-        <h1 id="more-games-title">Classam&apos;s Works</h1>
-        <p>Author Works</p>
-        <span aria-hidden="true">✦</span>
-      </div>
-
-      <div className="works-list">
-        {works.map((work) => (
-          <a className="work-banner" href={work.url} key={work.title} rel="noreferrer" target="_blank">
-            <span className="work-image-frame">
-              <img src={work.image} alt={`${work.title}作品首頁圖`} />
-            </span>
-            <span className="work-copy">
-              <strong>{work.title}</strong>
-              <small>{work.subtitle}</small>
-              <em>{work.year}</em>
-            </span>
-          </a>
+      <nav className="author-tabs" aria-label="Author page navigation">
+        {sections.map((section) => (
+          <button
+            className={activeSection === section.id ? "is-active" : ""}
+            key={section.id}
+            onClick={() => setActiveSection(section.id)}
+            type="button"
+          >
+            {section.label}
+          </button>
         ))}
-      </div>
+      </nav>
+
+      {activeSection === "works" && (
+        <>
+          <div className="more-games-heading">
+            <h1>Classam&apos;s Works</h1>
+            <p>Author Works</p>
+            <span aria-hidden="true">✦</span>
+          </div>
+          <div className="works-list">
+            {works.map((work) => (
+              <a className="work-banner" href={work.url} key={work.title} rel="noreferrer" target="_blank">
+                <span className="work-image-frame">
+                  <img src={work.image} alt={`${work.title}作品首頁圖`} />
+                </span>
+                <span className="work-copy">
+                  <strong>{work.title}</strong>
+                  <small>{work.subtitle}</small>
+                  <em>{work.year}</em>
+                </span>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+
+      {activeSection === "about" && (
+        <AuthorInfoPage eyebrow="About Author" title="About Classam">
+          <p>Classam 是一位喜歡故事、謎題與互動體驗的創作者。</p>
+          <p>作品多以記憶、關係與選擇為核心，希望讓玩家在解開謎題的同時，也能帶走一段屬於自己的故事。</p>
+          <p>更完整的作者介紹與創作經歷，將在後續版本補上。</p>
+        </AuthorInfoPage>
+      )}
+
+      {activeSection === "contact" && (
+        <AuthorInfoPage eyebrow="Contact" title="Contact the Author">
+          <dl className="contact-list">
+            <div><dt>Email</dt><dd>尚未公開</dd></div>
+            <div><dt>Social Media</dt><dd>Coming soon</dd></div>
+            <div><dt>Collaboration</dt><dd>合作與活動邀請資訊將於此處更新。</dd></div>
+          </dl>
+        </AuthorInfoPage>
+      )}
+
+      {activeSection === "eggs" && (
+        <AuthorInfoPage eyebrow="Easter Eggs" title="Hidden Memories">
+          <p>有些彩蛋藏在圖像裡，有些藏在角色不經意說出的話裡。</p>
+          <p>完成不同結局、重新閱讀日記，或許會發現第一次遊玩時錯過的細節。</p>
+          <p>正式彩蛋清單將在內容完成後逐步公開。</p>
+        </AuthorInfoPage>
+      )}
       <button className="more-games-close" type="button" onClick={onClose}>back</button>
+    </section>
+  );
+}
+
+function AuthorInfoPage({
+  children,
+  eyebrow,
+  title,
+}: {
+  children: React.ReactNode;
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <section className="author-info-page">
+      <p className="eyebrow">{eyebrow}</p>
+      <h1>{title}</h1>
+      <div className="author-info-body">{children}</div>
     </section>
   );
 }
