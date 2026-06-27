@@ -27,7 +27,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 const SAVE_KEY = "dream-about-him-save";
 const PROGRESS_KEY = "dream-about-him-progress";
 const ASSET_BASE = "/DreamAboutHim/assets";
-const BGM_SRC = "/DreamAboutHim/assets/bgm/Your%20Name%20in%20Steam.mp3";
+const BGM_SRC = "/DreamAboutHim/assets/bgm/bgm1.m4a";
 const BGM_VOLUME = 0.38;
 const DESIGN_WIDTH = 1600;
 const DESIGN_HEIGHT = 900;
@@ -59,31 +59,34 @@ const lockWheels = [
 
 const diaryPages = [
   {
-    id: "page-1",
-    title: "六月十七日",
-    body: "我在抽屜深處找到一張泛黃的照片。照片裡有人笑得很燦爛，可我一時想不起那天的風從哪裡吹來。",
-    linkLabel: "照片線索",
-    linkUrl: "https://example.com/memory-1",
-  },
-  {
-    id: "page-2",
-    title: "六月十八日",
-    body: "第二張照片背面寫著陌生又熟悉的字。像是有人把名字藏進時間裡，只等我親手翻出來。",
-    linkLabel: "舊日線索",
-    linkUrl: "https://example.com/memory-2",
-  },
-  {
     id: "page-3",
-    title: "最後一頁",
-    body: "相冊還空著。也許日記寫完的時候，照片就會自己回來。",
+    title: "X月O日",
+    body: "來回想一下今天...",
   },
 ];
 
-const albumSlots = [
-  { ending: "ending-1", hint: "黃兔" },
-  { ending: "ending-2", hint: "黃兔與白兔" },
-  { ending: "ending-3", hint: "黃兔與白兔與他" },
+const photoPages = [
+  {
+    ending: "ending-1",
+    title: "糖紙裡的初戀",
+    caption: "照片裡亮起第一個位置。",
+    image: `${ASSET_BASE}/photo/end1.png`,
+  },
+  {
+    ending: "ending-2",
+    title: "白色兔子與舊照片",
+    caption: "舊照片裡，多了熟悉的笑聲。",
+    image: `${ASSET_BASE}/photo/end2.png`,
+  },
+  {
+    ending: "ending-3",
+    title: "喊出你的名字",
+    caption: "四個位置終於全部亮起。",
+    image: `${ASSET_BASE}/photo/end3.png`,
+  },
 ];
+
+const diaryPageCount = 1 + photoPages.length;
 
 const characterSprites: Record<string, Record<string, string>> = {
   protagonist: {
@@ -120,6 +123,7 @@ const imageAssets = [
   `${ASSET_BASE}/bg/cafe.webp`,
   `${ASSET_BASE}/bg/bookstore.webp`,
   `${ASSET_BASE}/bg/starrysky.webp`,
+  ...photoPages.map((page) => page.image),
   ...Object.values(characterSprites).flatMap((expressions) =>
     Object.values(expressions).map((spritePath) => `${ASSET_BASE}/role/${spritePath}`),
   ),
@@ -261,7 +265,7 @@ function App() {
       try {
         await Promise.all([
           ...preloadAssets.map(async (asset) => {
-            if (asset.endsWith(".mp3")) {
+            if (asset.endsWith(".mp3") || asset.endsWith(".m4a")) {
               await preloadAudio(asset);
               markLoaded("正在確認音樂檔案");
               return;
@@ -683,95 +687,78 @@ function App() {
 
         {stage === "diary" && (
           <section className="diary-screen">
-          <AppChrome
-            variant="menu"
-            onOpenHints={() => setIsHintsOpen(true)}
-            onOpenMoreGames={() => setIsMoreGamesOpen(true)}
-          />
-          <div className="diary-shell">
-            <header className="topbar">
-              <div>
-                <p className="eyebrow">Diary</p>
-                <h1>被雨聲寫下的頁面</h1>
-              </div>
-              <button className="icon-button" type="button" onClick={restart} aria-label="重新開始">
-                <RotateCcw size={18} />
-              </button>
-            </header>
+            <AppChrome
+              variant="menu"
+              onOpenHints={() => setIsHintsOpen(true)}
+              onOpenMoreGames={() => setIsMoreGamesOpen(true)}
+            />
+            <div className="diary-shell">
+              <header className="topbar">
+                <div>
+                  <p className="eyebrow">Diary</p>
+                  <h1>被雨聲寫下的頁面</h1>
+                </div>
+                <button className="icon-button" type="button" onClick={restart} aria-label="重新開始">
+                  <RotateCcw size={18} />
+                </button>
+              </header>
 
-            <article
-              className={`diary-page ${pageIndex === 2 ? "entry-page album-page" : ""}`}
-            >
-              <BookOpen className="page-mark" size={28} />
-              <h2>{diaryPages[pageIndex].title}</h2>
-              <p>{diaryPages[pageIndex].body}</p>
-              {pageIndex < 2 && (
-                <a className="diary-link-photo" href={diaryPages[pageIndex].linkUrl} target="_blank" rel="noreferrer">
-                  <Image size={28} />
-                  <span>{diaryPages[pageIndex].linkLabel}</span>
-                </a>
-              )}
-              {pageIndex === 2 && (
-                <>
-                  <div className="album-grid" aria-label="結局相冊">
-                    {albumSlots.map((slot) => (
-                      <div key={slot.hint} className={`album-slot ${unlockedEndings.includes(slot.ending) ? "is-unlocked" : ""}`}>
-                        <div className="album-photo-placeholder">
-                          {unlockedEndings.includes(slot.ending) ? <Image size={30} /> : null}
-                        </div>
-                        <span>{slot.hint}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {!isWritingDiary ? (
-                    <button className="write-diary-button" type="button" onClick={() => setIsWritingDiary(true)}>
-                      寫日記
-                    </button>
-                  ) : (
-                    <DiaryWriting
-                      routeCount={diaryRouteCount}
-                      step={diaryStep}
-                      inputs={diaryInputs}
-                      onChange={changeDiaryInput}
-                      onSubmitCount={submitDiaryCount}
-                      onSubmitNames={submitDiaryNames}
-                      onSubmitDate={submitDiaryDate}
-                    />
-                  )}
-                </>
-              )}
-            </article>
-
-            <footer className="diary-controls">
-              <button
-                type="button"
-                disabled={pageIndex === 0}
-                onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
-              >
-                <ChevronLeft size={18} />
-                上一頁
-              </button>
-              <span>
-                {pageIndex + 1} / {diaryPages.length}
-              </span>
-              <button
-                type="button"
-                disabled={pageIndex === diaryPages.length - 1}
-                onClick={() => setPageIndex((current) => Math.min(diaryPages.length - 1, current + 1))}
-              >
-                下一頁
-                <ChevronRight size={18} />
-              </button>
-            </footer>
-          </div>
-          {diaryModal && (
-            <div className="modal-backdrop" role="presentation">
-              <section className="memory-error-modal" role="dialog" aria-modal="true">
-                <p>{diaryModal}</p>
-                <button type="button" onClick={() => setDiaryModal("")}>再想一次</button>
-              </section>
+              <article className={`diary-page ${pageIndex === 0 ? "entry-page writing-page" : "photo-page"}`}>
+                <BookOpen className="page-mark" size={28} />
+                {pageIndex === 0 ? (
+                  <>
+                    <h2>{diaryPages[0].title}</h2>
+                    <p>{diaryPages[0].body}</p>
+                    {!isWritingDiary ? (
+                      <button className="write-diary-button" type="button" onClick={() => setIsWritingDiary(true)}>
+                        寫日記
+                      </button>
+                    ) : (
+                      <DiaryWriting
+                        routeCount={diaryRouteCount}
+                        step={diaryStep}
+                        inputs={diaryInputs}
+                        onChange={changeDiaryInput}
+                        onSubmitCount={submitDiaryCount}
+                        onSubmitNames={submitDiaryNames}
+                        onSubmitDate={submitDiaryDate}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <PhotoDiaryPage page={photoPages[pageIndex - 1]} isUnlocked={unlockedEndings.includes(photoPages[pageIndex - 1].ending)} />
+                )}
+              </article>
+              <footer className="diary-controls">
+                <button
+                  type="button"
+                  disabled={pageIndex === 0}
+                  onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
+                >
+                  <ChevronLeft size={18} />
+                  上一頁
+                </button>
+                <span>
+                  {pageIndex + 1} / {diaryPageCount}
+                </span>
+                <button
+                  type="button"
+                  disabled={pageIndex === diaryPageCount - 1}
+                  onClick={() => setPageIndex((current) => Math.min(diaryPageCount - 1, current + 1))}
+                >
+                  下一頁
+                  <ChevronRight size={18} />
+                </button>
+              </footer>
             </div>
-          )}
+            {diaryModal && (
+              <div className="modal-backdrop" role="presentation">
+                <section className="memory-error-modal" role="dialog" aria-modal="true">
+                  <p>{diaryModal}</p>
+                  <button type="button" onClick={() => setDiaryModal("")}>再想一次</button>
+                </section>
+              </div>
+            )}
           </section>
         )}
 
@@ -779,7 +766,7 @@ function App() {
           <RouteNovelScreen
             route={endingRoutes[routeEnding]}
             onOpenGallery={() => {
-              setPageIndex(2);
+              setPageIndex(1);
               setStage("diary");
             }}
             onRestart={restart}
@@ -1005,10 +992,32 @@ interface DiaryWritingProps {
   onSubmitDate: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
+function PhotoDiaryPage({ page, isUnlocked }: { page: (typeof photoPages)[number]; isUnlocked: boolean }) {
+  return (
+    <>
+      <div className="photo-page-copy">
+        <p className="eyebrow">Memory Photo</p>
+        <h2>{page.title}</h2>
+        <p>{isUnlocked ? page.caption : "這張照片還沒有顯影。"}</p>
+      </div>
+      <figure className={`diary-photo-frame ${isUnlocked ? "is-unlocked" : "is-locked"}`}>
+        {isUnlocked ? (
+          <img src={page.image} alt={page.title} />
+        ) : (
+          <figcaption>
+            <Image size={42} />
+            <span>尚未解鎖</span>
+          </figcaption>
+        )}
+      </figure>
+    </>
+  );
+}
+
 function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSubmitNames, onSubmitDate }: DiaryWritingProps) {
   return (
     <section className="diary-writing" aria-label="寫日記">
-      <form onSubmit={onSubmitCount} className="diary-line-form">
+      <form onSubmit={onSubmitCount} className="diary-line-form diary-count-form">
         <span>今天，我和老友吃飯，我們</span>
         <input
           value={inputs.count}
@@ -1021,30 +1030,33 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
       </form>
 
       {step >= 1 && (
-        <form onSubmit={onSubmitNames} className="diary-line-form diary-continuation">
-          <span>真是好久不見了，</span>
-          <input value={inputs.yellow} onChange={(event) => onChange("yellow", event.target.value)} aria-label="黃兔名字" />
-          <span>她變得更漂亮了，而且還回到了我們以前的小學當老師！</span>
-          {routeCount && routeCount >= 3 && (
-            <>
+        <form onSubmit={onSubmitNames} className="diary-right-form diary-names-form">
+          <div className="diary-line-form diary-name-block">
+            <span>真是好久不見了，</span>
+            <input value={inputs.yellow} onChange={(event) => onChange("yellow", event.target.value)} aria-label="黃兔名字" />
+            <span>她變得更漂亮了，而且還回到了我們以前的小學當老師！</span>
+            {routeCount && routeCount >= 3 && (
+              <>
               <span>還有</span>
               <input value={inputs.white} onChange={(event) => onChange("white", event.target.value)} aria-label="白兔名字" />
               <span>，當年的小白兔居然已經長這麼高了，不過完全不意外他成為了美髮師，總覺得很適合他呢！</span>
-            </>
-          )}
+              </>
+            )}
+            {step === 1 && routeCount !== 4 && <button type="submit">確認</button>}
+          </div>
           {routeCount === 4 && (
-            <>
+            <div className="diary-line-form diary-person-block">
               <span>我們還聊到了</span>
               <input value={inputs.person} onChange={(event) => onChange("person", event.target.value)} aria-label="聊到的人" />
               <span>的事。</span>
-            </>
+              {step === 1 && <button type="submit">確認</button>}
+            </div>
           )}
-          {step === 1 && <button type="submit">確認</button>}
         </form>
       )}
 
       {step >= 2 && (
-        <form onSubmit={onSubmitDate} className="diary-line-form diary-continuation">
+        <form onSubmit={onSubmitDate} className="diary-line-form diary-right-form diary-date-form">
           <span>沒想到...他真的回來了，我們真的要見面了！就在</span>
           <select value={inputs.date} onChange={(event) => onChange("date", event.target.value)} aria-label="見面日期">
             <option value="">選擇日期</option>
@@ -1343,11 +1355,11 @@ function getCurrentHint(
   if (stage === "cover") {
     return "日記鎖有三個字母轉輪。答案與這場夢裡反覆出現的角色有關。";
   }
-  if (pageIndex < 2) {
-    return "先閱讀目前的日記內容與照片線索，再翻到最後一頁。";
+  if (pageIndex > 0) {
+    return "後面的頁面會保存已解鎖的結局照片。還沒顯影的照片，需要完成對應結局。";
   }
   if (!isWritingDiary) {
-    return "最後一頁還沒有寫完。按下「寫日記」，試著記錄這次聚會。";
+    return "按下「寫日記」，試著記錄這次聚會。";
   }
   if (diaryStep === 0) {
     return "聚會人數包含主角自己。記起的人越多，照片就會越完整。";
