@@ -1092,7 +1092,7 @@ p {
 .diary-photo-frame img {
   display: block;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   width: 100%;
 }
 
@@ -1409,7 +1409,7 @@ p {
 
 .speaker-row strong {
   align-items: center;
-  background: rgba(18, 28, 58, 0.92);
+  background: rgba(18, 28, 58, 0.2);
   border: 1px solid rgba(247, 211, 146, 0.56);
   border-radius: 999px;
   color: #f7dfad;
@@ -1420,6 +1420,11 @@ p {
   margin-top: -52px;
   min-width: 220px;
   padding: 12px 26px;
+}
+
+.speaker-row .speaker-protagonist {
+  background: rgba(222, 74, 74, 0.2);
+  border-color: rgba(255, 128, 118, 0.72);
 }
 
 .speaker-row .speaker-hsinwen {

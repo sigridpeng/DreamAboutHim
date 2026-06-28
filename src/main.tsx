@@ -6,14 +6,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Gamepad2,
   Image,
   Images,
+  Lightbulb,
   LockKeyhole,
   PenLine,
   PlayCircle,
   RotateCcw,
   Save,
-  Settings,
   SkipForward,
   Upload,
   X,
@@ -218,7 +219,7 @@ function App() {
   const lockPassword = lockIndices
     .map((letterIndex, wheelIndex) => lockWheels[wheelIndex][letterIndex])
     .join("");
-  const currentHint = getCurrentHint(stage, isIntroSolved, pageIndex, isWritingDiary, diaryStep);
+  const currentHint = getCurrentHint(stage, isIntroSolved);
 
   useEffect(() => {
     const progress: PersistentProgress = {
@@ -1336,6 +1337,7 @@ interface AppChromeProps {
 }
 
 function getSpeakerClassName(speaker: string) {
+  if (speaker === "主角") return "speaker-name speaker-protagonist";
   if (speaker === "黃欣雯") return "speaker-name speaker-hsinwen";
   if (speaker === "白恩棋") return "speaker-name speaker-enchi";
   if (speaker === "藍天和") return "speaker-name speaker-tianhe";
@@ -1345,29 +1347,14 @@ function getSpeakerClassName(speaker: string) {
 function getCurrentHint(
   stage: GameStage,
   isIntroSolved: boolean,
-  pageIndex: number,
-  isWritingDiary: boolean,
-  diaryStep: number,
 ) {
   if (stage === "cover" && !isIntroSolved) {
-    return "仔細觀察入口中央的圖像輪廓，它們共同組成了進入回憶的答案。";
+    return "觀察「童話之夢」裡的隱藏物件，請輸入8個大寫英文字母。";
   }
   if (stage === "cover") {
-    return "日記鎖有三個字母轉輪。答案與這場夢裡反覆出現的角色有關。";
+    return "觀察「童話之夢」遊戲裡，哪裏有出現這本日記上的小卡的圖案輪廓？";
   }
-  if (pageIndex > 0) {
-    return "後面的頁面會保存已解鎖的結局照片。還沒顯影的照片，需要完成對應結局。";
-  }
-  if (!isWritingDiary) {
-    return "按下「寫日記」，試著記錄這次聚會。";
-  }
-  if (diaryStep === 0) {
-    return "聚會人數包含主角自己。記起的人越多，照片就會越完整。";
-  }
-  if (diaryStep === 1) {
-    return "寫下黃色兔子與白色兔子的真正姓名；若還有第四個人，也別忘了你們談起的老朋友。";
-  }
-  return "最後的日期藏在一路找回的約定裡。選擇真正屬於重逢的那一天。";
+  return "完成日記的故事，填入相對應的人數（輸入數字）和人名（輸入2-3個字的中文），部分結局需先玩過前作「童話之約」或破解其彩蛋，可多和小學同學聊聊LINE來取得線索。";
 }
 
 function AppChrome({ variant, onOpenHints, onOpenMoreGames }: AppChromeProps) {
@@ -1380,11 +1367,11 @@ function AppChrome({ variant, onOpenHints, onOpenMoreGames }: AppChromeProps) {
       {variant === "menu" && (
         <aside className="side-actions" aria-label="側邊選單">
           <button type="button" onClick={onOpenHints}>
-            <Settings size={22} />
+            <Lightbulb size={22} />
             Hints
           </button>
           <button type="button" onClick={onOpenMoreGames}>
-            <Images size={22} />
+            <Gamepad2 size={22} />
             More Games
           </button>
         </aside>
