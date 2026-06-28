@@ -1351,6 +1351,18 @@ function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef,
     <section className="ending-credits-screen">
       <div className="credits-orange-reveal" aria-hidden="true" />
       <div className="ending-credits-glow" aria-hidden="true" />
+      {phase === "final" && (
+        <div className="ending-fireworks" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
       {phase === "finalPhoto" || phase === "final" ? (
         <div className="ending-final-card">
           <figure className={`ending-final-photo ${phase === "finalPhoto" ? "is-photo-only" : ""}`}>
@@ -1380,6 +1392,16 @@ function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef,
             {isFullEnding && <img className="ending-slide-credit" src={creditSlide} alt="" />}
           </figure>
           <section className="ending-credit-names" aria-label="工作人員名單">
+            {(phase === "creditRole" || phase === "creditName") ? (
+              <div className="ending-meteor-shower" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            ) : null}
             {(phase === "creditRole" || phase === "creditName" || phase === "fade") ? <h1 className="credit-role-text">{currentCredit.role}</h1> : null}
             {(phase === "creditName" || phase === "fade") ? <strong className="credit-name-text">{currentCredit.name}</strong> : null}
           </section>

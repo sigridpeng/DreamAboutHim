@@ -2145,6 +2145,214 @@ p {
   position: absolute;
 }
 
+.ending-fireworks {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ending-fireworks span {
+  animation: fireworkInnerBurst 4200ms ease-out infinite;
+  animation-delay: var(--firework-delay);
+  background: transparent;
+  border-radius: 999px;
+  filter: drop-shadow(0 0 8px var(--spark-b)) drop-shadow(0 0 18px var(--spark-c));
+  height: var(--spark-size);
+  left: var(--firework-x);
+  position: absolute;
+  top: var(--firework-y);
+  transform-origin: center;
+  width: var(--spark-size);
+}
+
+.ending-fireworks span::before,
+.ending-fireworks span::after {
+  animation: fireworkBurst 4200ms ease-out infinite;
+  animation-delay: var(--firework-delay);
+  border-radius: inherit;
+  content: "";
+  height: var(--spark-size);
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: var(--spark-size);
+}
+
+.ending-fireworks span::before {
+  box-shadow:
+    0 calc(var(--outer-radius) * -1) var(--spark-a),
+    calc(var(--outer-radius) * 0.26) calc(var(--outer-radius) * -0.97) var(--spark-f),
+    calc(var(--outer-radius) * 0.71) calc(var(--outer-radius) * -0.71) var(--spark-b),
+    calc(var(--outer-radius) * 0.97) calc(var(--outer-radius) * -0.26) var(--spark-d),
+    var(--outer-radius) 0 var(--spark-c),
+    calc(var(--outer-radius) * 0.97) calc(var(--outer-radius) * 0.26) var(--spark-e),
+    calc(var(--outer-radius) * 0.71) calc(var(--outer-radius) * 0.71) var(--spark-d),
+    calc(var(--outer-radius) * 0.26) calc(var(--outer-radius) * 0.97) var(--spark-b),
+    0 var(--outer-radius) var(--spark-e),
+    calc(var(--outer-radius) * -0.26) calc(var(--outer-radius) * 0.97) var(--spark-f),
+    calc(var(--outer-radius) * -0.71) calc(var(--outer-radius) * 0.71) var(--spark-b),
+    calc(var(--outer-radius) * -0.97) calc(var(--outer-radius) * 0.26) var(--spark-a),
+    calc(var(--outer-radius) * -1) 0 var(--spark-c),
+    calc(var(--outer-radius) * -0.97) calc(var(--outer-radius) * -0.26) var(--spark-e),
+    calc(var(--outer-radius) * -0.71) calc(var(--outer-radius) * -0.71) var(--spark-d),
+    calc(var(--outer-radius) * -0.26) calc(var(--outer-radius) * -0.97) var(--spark-b),
+    calc(var(--outer-radius) * 0.31) calc(var(--outer-radius) * -1.2) var(--spark-e),
+    calc(var(--outer-radius) * 1.2) calc(var(--outer-radius) * 0.31) var(--spark-a),
+    calc(var(--outer-radius) * -0.31) calc(var(--outer-radius) * 1.2) var(--spark-d),
+    calc(var(--outer-radius) * -1.2) calc(var(--outer-radius) * -0.31) var(--spark-e);
+}
+
+.ending-fireworks span::after {
+  animation-delay: var(--firework-delay);
+  box-shadow:
+    0 calc(var(--inner-radius) * -1) rgba(255, 246, 211, 0.96),
+    calc(var(--inner-radius) * 0.38) calc(var(--inner-radius) * -0.92) var(--spark-c),
+    calc(var(--inner-radius) * 0.71) calc(var(--inner-radius) * -0.71) var(--spark-e),
+    calc(var(--inner-radius) * 0.92) calc(var(--inner-radius) * -0.38) var(--spark-a),
+    var(--inner-radius) 0 var(--spark-b),
+    calc(var(--inner-radius) * 0.92) calc(var(--inner-radius) * 0.38) var(--spark-f),
+    calc(var(--inner-radius) * 0.71) calc(var(--inner-radius) * 0.71) var(--spark-c),
+    calc(var(--inner-radius) * 0.38) calc(var(--inner-radius) * 0.92) var(--spark-d),
+    0 var(--inner-radius) rgba(255, 246, 211, 0.96),
+    calc(var(--inner-radius) * -0.38) calc(var(--inner-radius) * 0.92) var(--spark-e),
+    calc(var(--inner-radius) * -0.71) calc(var(--inner-radius) * 0.71) var(--spark-d),
+    calc(var(--inner-radius) * -0.92) calc(var(--inner-radius) * 0.38) var(--spark-c),
+    calc(var(--inner-radius) * -1) 0 var(--spark-a),
+    calc(var(--inner-radius) * -0.92) calc(var(--inner-radius) * -0.38) var(--spark-f),
+    calc(var(--inner-radius) * -0.71) calc(var(--inner-radius) * -0.71) var(--spark-e);
+}
+
+.ending-fireworks span:nth-child(1) {
+  --firework-x: 18%;
+  --firework-y: 25%;
+  --outer-radius: 118px;
+  --inner-radius: 68px;
+  --core-radius: 36px;
+  --firework-delay: 120ms;
+  --spark-size: 8px;
+  --spark-a: rgba(255, 238, 178, 0.96);
+  --spark-b: rgba(255, 133, 91, 0.86);
+  --spark-c: rgba(255, 250, 223, 0.92);
+  --spark-d: rgba(255, 199, 87, 0.92);
+  --spark-e: rgba(255, 118, 168, 0.78);
+  --spark-f: rgba(255, 73, 103, 0.9);
+}
+
+.ending-fireworks span:nth-child(2) {
+  --firework-x: 78%;
+  --firework-y: 22%;
+  --outer-radius: 154px;
+  --inner-radius: 82px;
+  --core-radius: 42px;
+  --firework-delay: 920ms;
+  --spark-size: 9px;
+  --spark-a: rgba(255, 214, 126, 0.95);
+  --spark-b: rgba(72, 171, 255, 0.95);
+  --spark-c: rgba(255, 246, 211, 0.92);
+  --spark-d: rgba(139, 96, 255, 0.95);
+  --spark-e: rgba(52, 239, 212, 0.94);
+  --spark-f: rgba(255, 96, 201, 0.88);
+}
+
+.ending-fireworks span:nth-child(3) {
+  --firework-x: 32%;
+  --firework-y: 70%;
+  --outer-radius: 92px;
+  --inner-radius: 50px;
+  --core-radius: 28px;
+  --firework-delay: 1740ms;
+  --spark-size: 6px;
+  --spark-a: rgba(255, 188, 113, 0.86);
+  --spark-b: rgba(255, 245, 205, 0.92);
+  --spark-c: rgba(232, 111, 250, 0.9);
+  --spark-d: rgba(255, 82, 133, 0.92);
+  --spark-e: rgba(255, 221, 102, 0.86);
+  --spark-f: rgba(102, 255, 216, 0.82);
+}
+
+.ending-fireworks span:nth-child(4) {
+  --firework-x: 88%;
+  --firework-y: 62%;
+  --outer-radius: 132px;
+  --inner-radius: 72px;
+  --core-radius: 38px;
+  --firework-delay: 2520ms;
+  --spark-size: 8px;
+  --spark-a: rgba(255, 243, 195, 0.94);
+  --spark-b: rgba(255, 169, 107, 0.82);
+  --spark-c: rgba(118, 171, 255, 0.9);
+  --spark-d: rgba(96, 255, 158, 0.9);
+  --spark-e: rgba(255, 85, 85, 0.88);
+  --spark-f: rgba(255, 231, 77, 0.92);
+}
+
+.ending-fireworks span:nth-child(5) {
+  --firework-x: 55%;
+  --firework-y: 18%;
+  --outer-radius: 178px;
+  --inner-radius: 92px;
+  --core-radius: 48px;
+  --firework-delay: 3180ms;
+  --spark-size: 10px;
+  --spark-a: rgba(255, 220, 142, 0.94);
+  --spark-b: rgba(255, 246, 211, 0.94);
+  --spark-c: rgba(255, 155, 118, 0.82);
+  --spark-d: rgba(74, 189, 255, 0.92);
+  --spark-e: rgba(208, 89, 255, 0.9);
+  --spark-f: rgba(255, 79, 167, 0.88);
+}
+
+.ending-fireworks span:nth-child(6) {
+  --firework-x: 12%;
+  --firework-y: 58%;
+  --outer-radius: 146px;
+  --inner-radius: 76px;
+  --core-radius: 40px;
+  --firework-delay: 3820ms;
+  --spark-size: 8px;
+  --spark-a: rgba(255, 89, 156, 0.96);
+  --spark-b: rgba(255, 222, 92, 0.92);
+  --spark-c: rgba(147, 93, 255, 0.92);
+  --spark-d: rgba(255, 246, 211, 0.94);
+  --spark-e: rgba(255, 116, 76, 0.88);
+  --spark-f: rgba(89, 229, 255, 0.88);
+}
+
+.ending-fireworks span:nth-child(7) {
+  --firework-x: 67%;
+  --firework-y: 72%;
+  --outer-radius: 104px;
+  --inner-radius: 58px;
+  --core-radius: 32px;
+  --firework-delay: 4620ms;
+  --spark-size: 7px;
+  --spark-a: rgba(74, 220, 255, 0.96);
+  --spark-b: rgba(110, 255, 168, 0.9);
+  --spark-c: rgba(255, 244, 174, 0.94);
+  --spark-d: rgba(70, 133, 255, 0.92);
+  --spark-e: rgba(255, 105, 205, 0.86);
+  --spark-f: rgba(255, 142, 80, 0.86);
+}
+
+.ending-fireworks span:nth-child(8) {
+  --firework-x: 43%;
+  --firework-y: 34%;
+  --outer-radius: 72px;
+  --inner-radius: 42px;
+  --core-radius: 24px;
+  --firework-delay: 5280ms;
+  --spark-size: 5px;
+  --spark-a: rgba(255, 88, 88, 0.94);
+  --spark-b: rgba(255, 180, 67, 0.94);
+  --spark-c: rgba(255, 246, 211, 0.9);
+  --spark-d: rgba(255, 231, 79, 0.9);
+  --spark-e: rgba(255, 109, 176, 0.86);
+  --spark-f: rgba(126, 229, 255, 0.82);
+}
+
 .story-to-credits-transition {
   animation: orangeCoverIn 1500ms ease forwards;
   background:
@@ -2215,6 +2423,7 @@ p {
   font-family: Georgia, "Noto Serif TC", "PMingLiU", serif;
   align-self: stretch;
   min-height: 0;
+  overflow: hidden;
   position: relative;
 }
 
@@ -2240,6 +2449,7 @@ p {
   margin: 0;
   position: absolute;
   top: 17%;
+  z-index: 2;
   animation: creditsTextIn 1100ms ease both;
 }
 
@@ -2252,7 +2462,100 @@ p {
   line-height: 1.38;
   position: absolute;
   top: 58%;
+  z-index: 2;
   animation: creditsTextIn 1100ms ease both;
+}
+
+.ending-meteor-shower {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ending-meteor-shower span {
+  animation: meteorFall 1500ms ease-out both;
+  animation-delay: var(--meteor-delay);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.98), var(--meteor-color), rgba(255, 245, 205, 0));
+  border-radius: 999px;
+  box-shadow:
+    0 0 10px var(--meteor-color),
+    0 0 22px rgba(255, 223, 147, 0.34);
+  height: var(--meteor-size);
+  opacity: 0;
+  position: absolute;
+  right: var(--meteor-right);
+  top: var(--meteor-top);
+  transform: rotate(-38deg) translateX(0);
+  transform-origin: right center;
+  width: var(--meteor-length);
+}
+
+.ending-meteor-shower span::after {
+  background: rgba(255, 250, 222, 0.98);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255, 246, 211, 0.9);
+  content: "";
+  height: calc(var(--meteor-size) * 2.6);
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--meteor-size) * 2.6);
+}
+
+.ending-meteor-shower span:nth-child(1) {
+  --meteor-color: rgba(255, 218, 130, 0.84);
+  --meteor-delay: 120ms;
+  --meteor-length: 150px;
+  --meteor-right: -8%;
+  --meteor-size: 2px;
+  --meteor-top: 9%;
+}
+
+.ending-meteor-shower span:nth-child(2) {
+  --meteor-color: rgba(157, 205, 255, 0.78);
+  --meteor-delay: 360ms;
+  --meteor-length: 110px;
+  --meteor-right: 8%;
+  --meteor-size: 2px;
+  --meteor-top: 23%;
+}
+
+.ending-meteor-shower span:nth-child(3) {
+  --meteor-color: rgba(255, 171, 219, 0.74);
+  --meteor-delay: 620ms;
+  --meteor-length: 135px;
+  --meteor-right: -3%;
+  --meteor-size: 2px;
+  --meteor-top: 42%;
+}
+
+.ending-meteor-shower span:nth-child(4) {
+  --meteor-color: rgba(255, 246, 211, 0.86);
+  --meteor-delay: 860ms;
+  --meteor-length: 88px;
+  --meteor-right: 19%;
+  --meteor-size: 1.5px;
+  --meteor-top: 57%;
+}
+
+.ending-meteor-shower span:nth-child(5) {
+  --meteor-color: rgba(131, 241, 221, 0.72);
+  --meteor-delay: 1120ms;
+  --meteor-length: 126px;
+  --meteor-right: 2%;
+  --meteor-size: 2px;
+  --meteor-top: 72%;
+}
+
+.ending-meteor-shower span:nth-child(6) {
+  --meteor-color: rgba(255, 181, 96, 0.78);
+  --meteor-delay: 1320ms;
+  --meteor-length: 102px;
+  --meteor-right: 27%;
+  --meteor-size: 1.5px;
+  --meteor-top: 34%;
 }
 
 .ending-final-card {
@@ -2354,6 +2657,73 @@ p {
   }
 }
 
+@keyframes fireworkInnerBurst {
+  0%,
+  23% {
+    box-shadow: none;
+    opacity: 0;
+    transform: scale(0.12) translateY(0) rotate(0deg);
+  }
+  32% {
+    box-shadow:
+      0 calc(var(--core-radius) * -1) var(--spark-c),
+      calc(var(--core-radius) * 0.5) calc(var(--core-radius) * -0.86) var(--spark-a),
+      calc(var(--core-radius) * 0.86) calc(var(--core-radius) * -0.5) var(--spark-f),
+      var(--core-radius) 0 var(--spark-b),
+      calc(var(--core-radius) * 0.86) calc(var(--core-radius) * 0.5) var(--spark-d),
+      calc(var(--core-radius) * 0.5) calc(var(--core-radius) * 0.86) var(--spark-e),
+      0 var(--core-radius) var(--spark-a),
+      calc(var(--core-radius) * -0.5) calc(var(--core-radius) * 0.86) var(--spark-f),
+      calc(var(--core-radius) * -0.86) calc(var(--core-radius) * 0.5) var(--spark-c),
+      calc(var(--core-radius) * -1) 0 var(--spark-d),
+      calc(var(--core-radius) * -0.86) calc(var(--core-radius) * -0.5) var(--spark-b),
+      calc(var(--core-radius) * -0.5) calc(var(--core-radius) * -0.86) var(--spark-e);
+    opacity: 1;
+    transform: scale(0.56) translateY(0) rotate(-6deg);
+  }
+  62% {
+    opacity: 0.72;
+    transform: scale(1) translateY(8px) rotate(-12deg);
+  }
+  100% {
+    box-shadow:
+      0 calc(var(--core-radius) * -1) var(--spark-c),
+      calc(var(--core-radius) * 0.5) calc(var(--core-radius) * -0.86) var(--spark-a),
+      calc(var(--core-radius) * 0.86) calc(var(--core-radius) * -0.5) var(--spark-f),
+      var(--core-radius) 0 var(--spark-b),
+      calc(var(--core-radius) * 0.86) calc(var(--core-radius) * 0.5) var(--spark-d),
+      calc(var(--core-radius) * 0.5) calc(var(--core-radius) * 0.86) var(--spark-e),
+      0 var(--core-radius) var(--spark-a),
+      calc(var(--core-radius) * -0.5) calc(var(--core-radius) * 0.86) var(--spark-f),
+      calc(var(--core-radius) * -0.86) calc(var(--core-radius) * 0.5) var(--spark-c),
+      calc(var(--core-radius) * -1) 0 var(--spark-d),
+      calc(var(--core-radius) * -0.86) calc(var(--core-radius) * -0.5) var(--spark-b),
+      calc(var(--core-radius) * -0.5) calc(var(--core-radius) * -0.86) var(--spark-e);
+    opacity: 0;
+    transform: scale(1.38) translateY(24px) rotate(-18deg);
+  }
+}
+
+@keyframes fireworkBurst {
+  0%,
+  23% {
+    opacity: 0;
+    transform: scale(0.12) translateY(0) rotate(0deg);
+  }
+  32% {
+    opacity: 1;
+    transform: scale(0.56) translateY(0) rotate(7deg);
+  }
+  62% {
+    opacity: 0.72;
+    transform: scale(1) translateY(8px) rotate(14deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.38) translateY(24px) rotate(20deg);
+  }
+}
+
 @keyframes orangeCoverIn {
   from {
     opacity: 0;
@@ -2387,6 +2757,23 @@ p {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes meteorFall {
+  0% {
+    opacity: 0;
+    transform: rotate(-38deg) translateX(120px);
+  }
+  12% {
+    opacity: 0.9;
+  }
+  64% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-38deg) translateX(-680px);
   }
 }
 
