@@ -376,7 +376,30 @@ function App() {
 
   function changeDiaryInput(field: keyof typeof diaryInputs, value: string) {
     const nextValue = field === "count" ? value.replace(/\D/g, "").slice(0, 1) : value.trim();
-    setDiaryInputs((current) => ({ ...current, [field]: nextValue }));
+    if (field !== "count") {
+      setDiaryInputs((current) => ({ ...current, [field]: nextValue }));
+      return;
+    }
+
+    const nextCount = Number(nextValue);
+    const isValidRouteCount = nextCount === 2 || nextCount === 3 || nextCount === 4;
+
+    setDiaryInputs((current) => ({
+      ...current,
+      count: nextValue,
+      white: nextCount >= 3 ? current.white : "",
+      person: nextCount === 4 ? current.person : "",
+      date: "",
+    }));
+
+    if (!isValidRouteCount) {
+      setDiaryRouteCount(null);
+      setDiaryStep(0);
+      return;
+    }
+
+    setDiaryRouteCount(nextCount);
+    setDiaryStep((current) => (current > 1 ? 1 : current));
   }
 
   function rememberWrong() {
@@ -408,6 +431,16 @@ function App() {
 
   async function submitDiaryNames(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const currentCount = Number(diaryInputs.count);
+
+    if (
+      (currentCount !== 2 && currentCount !== 3 && currentCount !== 4) ||
+      diaryRouteCount !== currentCount
+    ) {
+      rememberWrong();
+      return;
+    }
+
     const yellowName = await sha256(diaryInputs.yellow.trim());
     const whiteName = await sha256(diaryInputs.white.trim());
     const personName = await sha256(diaryInputs.person.trim());
