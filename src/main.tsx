@@ -23,7 +23,7 @@ import { story } from "./data";
 import { endingRoutes, type EndingRouteLine, type RouteEnding } from "./endingRoutes";
 import type { Ending, FlagMap, GameStage, PersistentProgress, SaveData, SceneCharacter, VNNode } from "./types";
 import "./styles.css";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 const SAVE_KEY = "dream-about-him-save";
 const PROGRESS_KEY = "dream-about-him-progress";
@@ -89,6 +89,30 @@ const photoPages = [
 
 const diaryPageCount = 1 + photoPages.length;
 
+const creditsSlides = {
+  end1: [
+    `${ASSET_BASE}/slide/end1/P1.png`,
+    `${ASSET_BASE}/slide/end1/P2.png`,
+    `${ASSET_BASE}/slide/end1/P3.png`,
+  ],
+  end3: [
+    [`${ASSET_BASE}/slide/end3/P1-1.png`, `${ASSET_BASE}/slide/end3/P1-2.png`],
+    [`${ASSET_BASE}/slide/end3/P2-1.png`, `${ASSET_BASE}/slide/end3/P2-2.png`],
+    [`${ASSET_BASE}/slide/end3/P3-1.png`, `${ASSET_BASE}/slide/end3/P3-2.png`],
+  ],
+} as const;
+
+const creditsAudio = {
+  end1: `${ASSET_BASE}/bgm/end1.m4a`,
+  end3: `${ASSET_BASE}/bgm/end3.m4a`,
+} as const;
+
+const creditLines = [
+  { role: "劇本", name: "克拉珊" },
+  { role: "謎題", name: "克拉珊" },
+  { role: "美工及歌曲", name: "克拉珊 / ChatGPT / Dream / Suno" },
+];
+
 const characterSprites: Record<string, Record<string, string>> = {
   protagonist: {
     neutral: "blue/blue-normal.webp",
@@ -125,12 +149,14 @@ const imageAssets = [
   `${ASSET_BASE}/bg/bookstore.webp`,
   `${ASSET_BASE}/bg/starrysky.webp`,
   ...photoPages.map((page) => page.image),
+  ...creditsSlides.end1,
+  ...creditsSlides.end3.flat(),
   ...Object.values(characterSprites).flatMap((expressions) =>
     Object.values(expressions).map((spritePath) => `${ASSET_BASE}/role/${spritePath}`),
   ),
 ];
 
-const preloadAssets = [...new Set(imageAssets), BGM_SRC];
+const preloadAssets = [...new Set(imageAssets), BGM_SRC, creditsAudio.end1, creditsAudio.end3];
 
 function readPersistentProgress(): PersistentProgress {
   const emptyProgress: PersistentProgress = {
@@ -799,6 +825,8 @@ function App() {
         {stage === "visualNovel" && (
           <RouteNovelScreen
             route={endingRoutes[routeEnding]}
+            routeEnding={routeEnding}
+            mainAudioRef={audioRef}
             onOpenGallery={() => {
               setPageIndex(1);
               setStage("diary");
@@ -1108,17 +1136,21 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
 
 interface RouteNovelScreenProps {
   route: (typeof endingRoutes)[RouteEnding];
+  routeEnding: RouteEnding;
+  mainAudioRef: RefObject<HTMLAudioElement | null>;
   onOpenGallery: () => void;
   onRestart: () => void;
 }
 
-function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenProps) {
+function RouteNovelScreen({ route, routeEnding, mainAudioRef, onOpenGallery, onRestart }: RouteNovelScreenProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
   const [choiceLines, setChoiceLines] = useState<EndingRouteLine[] | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [isEndingTransitioning, setIsEndingTransitioning] = useState(false);
   const [displayCharacters, setDisplayCharacters] = useState<SceneCharacter[]>([]);
   const [isCharacterStageVisible, setIsCharacterStageVisible] = useState(false);
+  const endingAudioRef = useRef<HTMLAudioElement | null>(null);
   const scene = route.scenes[sceneIndex] ?? route.scenes[0];
   const lines = choiceLines ?? scene.lines;
   const line = lines[lineIndex] ?? lines[lines.length - 1];
@@ -1142,9 +1174,19 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
     setLineIndex(0);
     setChoiceLines(null);
     setIsComplete(false);
+    setIsEndingTransitioning(false);
     setDisplayCharacters([]);
     setIsCharacterStageVisible(false);
+    endingAudioRef.current?.pause();
+    endingAudioRef.current = null;
   }, [route]);
+
+  useEffect(() => {
+    return () => {
+      endingAudioRef.current?.pause();
+      endingAudioRef.current = null;
+    };
+  }, []);
 
   function advanceRoute() {
     if (isChoicePoint) return;
@@ -1167,7 +1209,31 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
       return;
     }
 
-    setIsComplete(true);
+    if (mainAudioRef.current) {
+      mainAudioRef.current.pause();
+      mainAudioRef.current.volume = 0;
+    }
+    endingAudioRef.current?.pause();
+    const endingAudio = new Audio(routeEnding === "ending-3" ? creditsAudio.end3 : creditsAudio.end1);
+    endingAudio.volume = 0.72;
+    endingAudio.preload = "auto";
+    endingAudioRef.current = endingAudio;
+
+    const playEndingAudio = () => {
+      endingAudio.play().catch(() => undefined);
+      window.removeEventListener("pointerdown", playEndingAudio);
+      window.removeEventListener("keydown", playEndingAudio);
+    };
+    endingAudio.play().catch(() => {
+      window.addEventListener("pointerdown", playEndingAudio, { once: true });
+      window.addEventListener("keydown", playEndingAudio, { once: true });
+    });
+
+    setIsEndingTransitioning(true);
+    window.setTimeout(() => {
+      setIsComplete(true);
+      setIsEndingTransitioning(false);
+    }, 1500);
   }
 
   function chooseRoute(linesForChoice: EndingRouteLine[]) {
@@ -1176,7 +1242,7 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
   }
 
   if (isComplete) {
-    return <ThankYouScreen onOpenGallery={onOpenGallery} onRestart={onRestart} />;
+    return <EndingCreditsScreen route={route} routeEnding={routeEnding} mainAudioRef={mainAudioRef} endingAudioRef={endingAudioRef} onOpenGallery={onOpenGallery} onRestart={onRestart} />;
   }
 
   return (
@@ -1209,6 +1275,116 @@ function RouteNovelScreen({ route, onOpenGallery, onRestart }: RouteNovelScreenP
           </button>
         )}
       </section>
+      {isEndingTransitioning && <div className="story-to-credits-transition" aria-hidden="true" />}
+    </section>
+  );
+}
+
+type CreditsPhase = "slide" | "creditRole" | "creditName" | "fade" | "finalPhoto" | "final";
+
+interface EndingCreditsScreenProps {
+  route: (typeof endingRoutes)[RouteEnding];
+  routeEnding: RouteEnding;
+  mainAudioRef: RefObject<HTMLAudioElement | null>;
+  endingAudioRef: RefObject<HTMLAudioElement | null>;
+  onOpenGallery: () => void;
+  onRestart: () => void;
+}
+
+function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef, onOpenGallery, onRestart }: EndingCreditsScreenProps) {
+  const isFullEnding = routeEnding === "ending-3";
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [phase, setPhase] = useState<CreditsPhase>("slide");
+  const finalPhoto = photoPages.find((page) => page.ending === route.albumEnding) ?? photoPages[0];
+  const currentCredit = creditLines[slideIndex] ?? creditLines[creditLines.length - 1];
+
+  const currentSlide = isFullEnding ? creditsSlides.end3[slideIndex][0] : creditsSlides.end1[slideIndex];
+  const creditSlide = isFullEnding ? creditsSlides.end3[slideIndex][1] : currentSlide;
+
+  function leaveCredits(next: () => void) {
+    endingAudioRef.current?.pause();
+    endingAudioRef.current = null;
+    if (mainAudioRef.current) {
+      mainAudioRef.current.volume = BGM_VOLUME;
+      mainAudioRef.current.play().catch(() => undefined);
+    }
+    next();
+  }
+
+  useEffect(() => {
+    if (phase === "final") return;
+
+    const nextTimer = window.setTimeout(() => {
+      if (phase === "finalPhoto") {
+        setPhase("final");
+        return;
+      }
+
+      if (phase === "slide") {
+        setPhase("creditRole");
+        return;
+      }
+
+      if (phase === "creditRole") {
+        setPhase("creditName");
+        return;
+      }
+
+      if (phase === "creditName") {
+        setPhase("fade");
+        return;
+      }
+
+      if (slideIndex < creditsSlides.end1.length - 1) {
+        setSlideIndex((current) => current + 1);
+        setPhase("slide");
+        return;
+      }
+
+      setPhase("finalPhoto");
+    }, phase === "slide" ? 3000 : phase === "creditRole" ? 2500 : phase === "creditName" ? 4000 : phase === "fade" ? 2500 : 5000);
+
+    return () => window.clearTimeout(nextTimer);
+  }, [phase, slideIndex]);
+
+  return (
+    <section className="ending-credits-screen">
+      <div className="credits-orange-reveal" aria-hidden="true" />
+      <div className="ending-credits-glow" aria-hidden="true" />
+      {phase === "finalPhoto" || phase === "final" ? (
+        <div className="ending-final-card">
+          <figure className={`ending-final-photo ${phase === "finalPhoto" ? "is-photo-only" : ""}`}>
+            <img src={finalPhoto.image} alt={finalPhoto.title} />
+          </figure>
+          <div className={`ending-final-copy ${phase === "final" ? "is-visible" : ""}`}>
+            <p className="eyebrow">Thank You</p>
+            <h1>感謝你的遊玩</h1>
+            <p>結局：{route.title}</p>
+            <p>{route.endingText}</p>
+            <div className="thank-you-actions ending-final-actions">
+              <button type="button" onClick={() => leaveCredits(onOpenGallery)}>
+                <Images size={24} />
+                Gallery
+              </button>
+              <button type="button" onClick={() => leaveCredits(onRestart)}>
+                <RotateCcw size={24} />
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={`ending-credit-step is-${phase}`} key={slideIndex}>
+          <figure className="ending-credit-slide">
+            <img className="ending-slide-base" src={currentSlide} alt="" />
+            {isFullEnding && <img className="ending-slide-credit" src={creditSlide} alt="" />}
+          </figure>
+          <section className="ending-credit-names" aria-label="工作人員名單">
+            {(phase === "creditRole" || phase === "creditName" || phase === "fade") ? <h1 className="credit-role-text">{currentCredit.role}</h1> : null}
+            {(phase === "creditName" || phase === "fade") ? <strong className="credit-name-text">{currentCredit.name}</strong> : null}
+          </section>
+        </div>
+      )}
     </section>
   );
 }
