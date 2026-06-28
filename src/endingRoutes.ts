@@ -188,7 +188,7 @@ const ending1: EndingRoute = {
 const ending2: EndingRoute = {
   albumEnding: "ending-2",
   background: "bookstore",
-  title: "白色兔子與舊照片",
+  title: "記憶的顏色",
   characters: c2("黃欣雯"),
   scenes: [
     {
@@ -227,7 +227,7 @@ const ending2: EndingRoute = {
             { speaker: "白恩棋", text: "連欣雯老師都這麼說了，是不是要來光顧一下我的店？", characters: c2("白恩棋", "neutral", "surprised") },
             { speaker: "主角", text: "那你以前就對頭髮有興趣嗎？" },
             { speaker: "白恩棋", text: "以前是對顏色有興趣，彩色鉛筆、色紙、公仔、衣服。後來發現頭髮也可以很有特色。", characters: c2("白恩棋", "neutral", "soft") },
-            { speaker: "黃欣雯", text: "恩棋以前很會畫畫。一到美勞課，他眼睛就會亮起來。", characters: c2("黃欣雯", "neutral", "soft") },
+            { speaker: "黃欣雯", text: "恩棋以前很會畫畫。一到美勞課，他整個人就特別有精神。", characters: c2("黃欣雯", "neutral", "soft") },
             { speaker: "白恩棋", text: "結果那時候大家只覺得我衣服太亮。", characters: c2("白恩棋", "neutral", "sad") },
           ],
         },
@@ -261,8 +261,8 @@ const ending2: EndingRoute = {
       ],
     },
   ],
-  endingText: "我找回了兩位老同學，也找回了一些下課後的聲音。舊照片還有幾處模糊，可燈已經亮起來了。",
-  hint: "三個人的座位亮了起來。黃色紙兔子和白色紙兔子靠在一起。",
+  endingText: "我找回了兩位老同學，也找回了一些下課後的聲音。舊照片還有幾處模糊，但已能感覺到暖意。",
+  hint: "三個人的座位有了輪廓。黃色紙兔子和白色紙兔子靠在一起。",
 };
 
 const ending2WithoutAhan: EndingRoute = {
@@ -279,7 +279,7 @@ const ending2WithoutAhan: EndingRoute = {
         { speaker: "白恩棋", text: "至於我，還是在美國用剪刀和彩色染劑努力生活。偶爾也會幫客人做很大膽的造型。", characters: c2("白恩棋", "soft", "surprised") },
         { speaker: "主角", text: "聽起來很像你。小時候最喜歡顏色的人，長大後還是在和顏色一起工作。" },
         { speaker: "白恩棋", text: "對吧？有些事情長大以後，反而變得更像自己了。", characters: c2("白恩棋", "soft", "soft") },
-        { text: "我們談起以前的座位、鮮豔的衣服，也談起那些下課後一起走過的走廊。三個人的笑聲，讓記憶裡的教室重新亮了起來。" },
+        { text: "我們談起以前的座位、鮮豔的衣服，也談起那些下課後一起走過的走廊。三個人的笑聲，讓記憶裡的教室又有了聲音。" },
         { speaker: "白恩棋", text: "老朋友……真的很高興能再見到你！別忘了我，好嗎？", characters: c2("白恩棋", "soft", "neutral") },
         { speaker: "黃欣雯", text: "我們大家下次再約，好嗎？現在先來拍張照片吧。", characters: c2("黃欣雯", "surprised", "neutral") },
         { text: "我們三人擠在一起，在相片中留下了影像。" },
@@ -288,7 +288,7 @@ const ending2WithoutAhan: EndingRoute = {
       ],
     },
   ],
-  hint: "三個人的座位亮了起來。這一次，照片裡沒有誰被叫錯名字。",
+  hint: "三個人的座位有了輪廓。這一次，照片裡沒有誰被叫錯名字。",
 };
 
 const ending3: EndingRoute = {
@@ -337,7 +337,7 @@ const ending3: EndingRoute = {
     },
   ],
   endingText: "我終於不只記得綽號，也記得你真正的名字。那張空了很多年的座位，終於有人回來了。",
-  hint: "四個人的座位全部亮起。屬於他們的新故事，正要開始。",
+  hint: "四個人的座位終於坐滿。屬於他們的新故事，正要開始。",
 };
 
 export const endingRoutes: Record<RouteEnding, EndingRoute> = {

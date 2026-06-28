@@ -75,14 +75,14 @@ const photoPages = [
   },
   {
     ending: "ending-2",
-    title: "白色兔子與舊照片",
-    caption: "舊照片裡，多了熟悉的笑聲。",
+    title: "記憶的顏色",
+    caption: "照片裡多了些熟悉的笑聲。",
     image: `${ASSET_BASE}/photo/end2.png`,
   },
   {
     ending: "ending-3",
     title: "喊出你的名字",
-    caption: "四個位置終於全部亮起。",
+    caption: "所有模糊的回憶終於清晰了。",
     image: `${ASSET_BASE}/photo/end3.png`,
   },
 ];
@@ -1608,6 +1608,7 @@ function MoreGamesScreen({ onClose }: { onClose: () => void }) {
     },
   ];
   const [activeSection, setActiveSection] = useState<AuthorSection>("works");
+  const [isContactEmailVisible, setIsContactEmailVisible] = useState(false);
   const sections: Array<{ id: AuthorSection; label: string }> = [
     { id: "works", label: "Author Works" },
     { id: "about", label: "About Author" },
@@ -1656,28 +1657,39 @@ function MoreGamesScreen({ onClose }: { onClose: () => void }) {
       )}
 
       {activeSection === "about" && (
-        <AuthorInfoPage eyebrow="About Author" title="About Classam">
-          <p>Classam 是一位喜歡故事、謎題與互動體驗的創作者。</p>
-          <p>作品多以記憶、關係與選擇為核心，希望讓玩家在解開謎題的同時，也能帶走一段屬於自己的故事。</p>
-          <p>更完整的作者介紹與創作經歷，將在後續版本補上。</p>
+        <AuthorInfoPage eyebrow="About Author" title="About Classam" avatar={`${ASSET_BASE}/ui/author-avatar.webp`}>
+          <p>克拉珊（Classam）是一位喜歡故事、謎題與互動體驗的創作者。</p>
+          <p>作品注重謎題與劇情、情感及意象的融合，希望讓玩家在解開謎題的同時，也能帶走一段屬於自己的故事。</p>
         </AuthorInfoPage>
       )}
 
       {activeSection === "contact" && (
-        <AuthorInfoPage eyebrow="Contact" title="Contact the Author">
-          <dl className="contact-list">
-            <div><dt>Email</dt><dd>尚未公開</dd></div>
-            <div><dt>Social Media</dt><dd>Coming soon</dd></div>
-            <div><dt>Collaboration</dt><dd>合作與活動邀請資訊將於此處更新。</dd></div>
-          </dl>
+        <AuthorInfoPage eyebrow="Contact" title="Contact the Author" className="contact-author-page">
+          <button
+            className="contact-plane-button"
+            type="button"
+            onClick={() => {
+              setIsContactEmailVisible(true);
+              window.location.href = "mailto:bluebellfive@outlook.com";
+            }}
+          >
+            <span className="paper-plane-animation" aria-hidden="true">
+              <span className="paper-plane" />
+              <i />
+              <i />
+              <i />
+            </span>
+            <span className="contact-plane-hint">
+              {isContactEmailVisible ? "bluebellfive@outlook.com" : "點擊紙飛機寄出你的訊息"}
+            </span>
+          </button>
         </AuthorInfoPage>
       )}
 
       {activeSection === "eggs" && (
-        <AuthorInfoPage eyebrow="Easter Eggs" title="Hidden Memories">
-          <p>有些彩蛋藏在圖像裡，有些藏在角色不經意說出的話裡。</p>
-          <p>完成不同結局、重新閱讀日記，或許會發現第一次遊玩時錯過的細節。</p>
-          <p>正式彩蛋清單將在內容完成後逐步公開。</p>
+        <AuthorInfoPage eyebrow="Easter Eggs" title="Hidden Secrets" className="easter-eggs-page">
+          <p>「童話之約」的彩蛋需要好好觀察AR裡的足跡，再看看實體地圖裡還沒被用上的地方。而且別忘了和小學同學們用LINE保持聯繫永遠都很重要喔！</p>
+          <div className="secret-magnifier" aria-hidden="true" />
         </AuthorInfoPage>
       )}
       <button className="more-games-close" type="button" onClick={onClose}>back</button>
@@ -1686,19 +1698,26 @@ function MoreGamesScreen({ onClose }: { onClose: () => void }) {
 }
 
 function AuthorInfoPage({
+  avatar,
   children,
+  className = "",
   eyebrow,
   title,
 }: {
+  avatar?: string;
   children: React.ReactNode;
+  className?: string;
   eyebrow: string;
   title: string;
 }) {
   return (
-    <section className="author-info-page">
+    <section className={`author-info-page ${className}`}>
       <p className="eyebrow">{eyebrow}</p>
       <h1>{title}</h1>
-      <div className="author-info-body">{children}</div>
+      <div className={`author-info-body ${avatar ? "has-avatar" : ""}`}>
+        {avatar && <img className="author-avatar" src={avatar} alt="克拉珊（Classam）" />}
+        <div>{children}</div>
+      </div>
     </section>
   );
 }
