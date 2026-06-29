@@ -1335,19 +1335,35 @@ p {
   background: linear-gradient(180deg, #9db9b2, #3e5656);
 }
 
-.expression-soft {
+.expression-soft,
+.expression-smile,
+.expression-sayhi {
   box-shadow: 0 24px 54px rgba(238, 210, 160, 0.2);
 }
 
-.expression-sad {
+.expression-sad,
+.expression-shy,
+.expression-humph {
   opacity: 0.82;
 }
 
-.expression-surprised {
+.expression-surprised,
+.expression-stare,
+.expression-thumbup,
+.expression-hold,
+.expression-box,
+.expression-think,
+.expression-wish {
   transform: translateX(-50%) scale(0.98);
 }
 
-.character-sprite.active.expression-surprised {
+.character-sprite.active.expression-surprised,
+.character-sprite.active.expression-stare,
+.character-sprite.active.expression-thumbup,
+.character-sprite.active.expression-hold,
+.character-sprite.active.expression-box,
+.character-sprite.active.expression-think,
+.character-sprite.active.expression-wish {
   transform: translateX(-50%) scale(1.02);
 }
 

@@ -18,7 +18,7 @@ export interface SceneCharacter {
   id: string;
   name: string;
   position: CharacterPosition;
-  expression: "neutral" | "soft" | "sad" | "surprised";
+  expression: string;
   active?: boolean;
 }
 
