@@ -974,6 +974,19 @@ p {
   margin: 0;
 }
 
+.diary-line-form span {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.diary-line-form .diary-blank-group {
+  align-items: baseline;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 .diary-count-form {
   left: 13.2%;
   max-width: 100%;
@@ -1022,6 +1035,11 @@ p {
   min-height: 30px;
   padding: 0 8px;
   width: 96px;
+}
+
+.diary-line-form .diary-date-input {
+  text-align: center;
+  width: 54px;
 }
 
 .diary-line-form select {

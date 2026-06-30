@@ -48,7 +48,6 @@ const BRANCH_THREE_HASHES = new Set([
   "98509e3312f3d5a0e957d78c4a09aa27542776690f739790e076c92c051193b6",
   "b46d5d06ab987fb8906b83030ed8f42f2fa3d145be73a60db80f2e0d086b719e",
 ]);
-const REUNION_DATE_HASH = "d1bb792ab72df424d695fa4b9aba6b2d5d9315b148f1092d0708752853947a72";
 
 type LockWheelIndex = 0 | 1 | 2;
 
@@ -538,7 +537,8 @@ function App() {
 
   async function submitDiaryDate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!(await matchesHash(diaryInputs.date, REUNION_DATE_HASH))) {
+    const [month, day] = diaryInputs.date.split(",");
+    if (Number(month) !== 7 || Number(day) !== 24) {
       rememberWrong();
       return;
     }
@@ -1113,30 +1113,43 @@ function PhotoDiaryPage({ page, isUnlocked }: { page: (typeof photoPages)[number
 }
 
 function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSubmitNames, onSubmitDate }: DiaryWritingProps) {
+  const [dateMonth = "", dateDay = ""] = inputs.date.split(",");
+  const changeDatePart = (part: "month" | "day", value: string) => {
+    const nextValue = value.replace(/\D/g, "").slice(0, 2);
+    onChange("date", part === "month" ? `${nextValue},${dateDay}` : `${dateMonth},${nextValue}`);
+  };
+
   return (
     <section className="diary-writing" aria-label="寫日記">
       <form onSubmit={onSubmitCount} className="diary-line-form diary-count-form">
-        <span>今天，我和老友吃飯，我們</span>
-        <input
-          value={inputs.count}
-          onChange={(event) => onChange("count", event.target.value)}
-          inputMode="numeric"
-          aria-label="人數"
-        />
-        <span>人一起去了一間咖啡廳敘舊。</span>
+        <span className="diary-blank-group">
+          <span>今天，我和老友吃飯，我們</span>
+          <input
+            value={inputs.count}
+            onChange={(event) => onChange("count", event.target.value)}
+            inputMode="numeric"
+            aria-label="人數"
+          />
+          <span>人</span>
+        </span>
+        <span>一起去了一間咖啡廳敘舊。</span>
         {step === 0 && <button type="submit">寫下去</button>}
       </form>
 
       {step >= 1 && (
         <form onSubmit={onSubmitNames} className="diary-right-form diary-names-form">
           <div className="diary-line-form diary-name-block">
-            <span>真是好久不見了，</span>
-            <input value={inputs.yellow} onChange={(event) => onChange("yellow", event.target.value)} aria-label="黃兔名字" />
+            <span className="diary-blank-group">
+              <span>真是好久不見了，</span>
+              <input value={inputs.yellow} onChange={(event) => onChange("yellow", event.target.value)} aria-label="黃兔名字" />
+            </span>
             <span>她變得更漂亮了，而且還回到了我們以前的小學當老師！</span>
             {routeCount && routeCount >= 3 && (
               <>
-              <span>還有</span>
-              <input value={inputs.white} onChange={(event) => onChange("white", event.target.value)} aria-label="白兔名字" />
+              <span className="diary-blank-group">
+                <span>還有</span>
+                <input value={inputs.white} onChange={(event) => onChange("white", event.target.value)} aria-label="白兔名字" />
+              </span>
               <span>，當年的小白兔居然已經長這麼高了，不過完全不意外他成為了美髮師，總覺得很適合他呢！</span>
               </>
             )}
@@ -1156,13 +1169,22 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
       {step >= 2 && (
         <form onSubmit={onSubmitDate} className="diary-line-form diary-right-form diary-date-form">
           <span>沒想到...他真的回來了，我們真的要見面了！就在</span>
-          <select value={inputs.date} onChange={(event) => onChange("date", event.target.value)} aria-label="見面日期">
-            <option value="">選擇日期</option>
-            <option value="2026/7/17">2026/7/17</option>
-            <option value="2026/7/24">2026/7/24</option>
-            <option value="2026/8/24">2026/8/24</option>
-          </select>
-          <span>。</span>
+          <input
+            className="diary-date-input"
+            value={dateMonth}
+            onChange={(event) => changeDatePart("month", event.target.value)}
+            inputMode="numeric"
+            aria-label="見面月份"
+          />
+          <span>月</span>
+          <input
+            className="diary-date-input"
+            value={dateDay}
+            onChange={(event) => changeDatePart("day", event.target.value)}
+            inputMode="numeric"
+            aria-label="見面日期"
+          />
+          <span>日。</span>
           <button type="submit">完成</button>
         </form>
       )}
