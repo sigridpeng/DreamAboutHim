@@ -242,7 +242,9 @@ function App() {
   const [isResetProgressOpen, setIsResetProgressOpen] = useState(false);
   const [isMoreGamesOpen, setIsMoreGamesOpen] = useState(false);
   const [isRouteTransitioning, setIsRouteTransitioning] = useState(false);
+  const [isDiaryReturnFading, setIsDiaryReturnFading] = useState(false);
   const [routeEnding, setRouteEnding] = useState<RouteEnding>("ending-1");
+  const [routeWasUnlocked, setRouteWasUnlocked] = useState(false);
   const [nodeId, setNodeId] = useState(story.startNode);
   const [flags, setFlags] = useState<FlagMap>({});
   const [unlockedEndings, setUnlockedEndings] = useState<string[]>(initialProgress.unlockedEndings);
@@ -455,6 +457,7 @@ function App() {
 
   function startRouteEnding(nextEnding: RouteEnding) {
     const route = endingRoutes[nextEnding];
+    setRouteWasUnlocked(unlockedEndings.includes(route.albumEnding));
     playMagicTransitionSound();
     setIsRouteTransitioning(true);
     setRouteEnding(nextEnding);
@@ -463,6 +466,14 @@ function App() {
     );
     window.setTimeout(() => setStage("visualNovel"), 650);
     window.setTimeout(() => setIsRouteTransitioning(false), 1900);
+  }
+
+  function returnToDiaryFromCredits() {
+    setPageIndex(0);
+    setIsWritingDiary(false);
+    setStage("diary");
+    setIsDiaryReturnFading(true);
+    window.setTimeout(() => setIsDiaryReturnFading(false), 1500);
   }
 
   function submitDiaryCount(event: React.FormEvent<HTMLFormElement>) {
@@ -847,11 +858,13 @@ function App() {
           <RouteNovelScreen
             route={endingRoutes[routeEnding]}
             routeEnding={routeEnding}
+            canSkipCredits={routeWasUnlocked}
             mainAudioRef={audioRef}
             onOpenGallery={() => {
               setPageIndex(1);
               setStage("diary");
             }}
+            onReturnToDiary={returnToDiaryFromCredits}
             onRestart={restart}
           />
         )}
@@ -859,6 +872,8 @@ function App() {
         {stage === "ending" && currentEnding && (
           <EndingScreen ending={currentEnding} unlockedEndings={unlockedEndings} onRestart={restart} onLoad={loadGame} />
         )}
+
+        {isDiaryReturnFading && <div className="diary-return-fade" aria-hidden="true" />}
 
         {isHintsOpen && (
           <div className="modal-backdrop" role="presentation">
@@ -1158,12 +1173,14 @@ function DiaryWriting({ routeCount, step, inputs, onChange, onSubmitCount, onSub
 interface RouteNovelScreenProps {
   route: (typeof endingRoutes)[RouteEnding];
   routeEnding: RouteEnding;
+  canSkipCredits: boolean;
   mainAudioRef: RefObject<HTMLAudioElement | null>;
   onOpenGallery: () => void;
+  onReturnToDiary: () => void;
   onRestart: () => void;
 }
 
-function RouteNovelScreen({ route, routeEnding, mainAudioRef, onOpenGallery, onRestart }: RouteNovelScreenProps) {
+function RouteNovelScreen({ route, routeEnding, canSkipCredits, mainAudioRef, onOpenGallery, onReturnToDiary, onRestart }: RouteNovelScreenProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
   const [choiceLines, setChoiceLines] = useState<EndingRouteLine[] | null>(null);
@@ -1263,7 +1280,7 @@ function RouteNovelScreen({ route, routeEnding, mainAudioRef, onOpenGallery, onR
   }
 
   if (isComplete) {
-    return <EndingCreditsScreen route={route} routeEnding={routeEnding} mainAudioRef={mainAudioRef} endingAudioRef={endingAudioRef} onOpenGallery={onOpenGallery} onRestart={onRestart} />;
+    return <EndingCreditsScreen route={route} routeEnding={routeEnding} canSkipCredits={canSkipCredits} mainAudioRef={mainAudioRef} endingAudioRef={endingAudioRef} onOpenGallery={onOpenGallery} onReturnToDiary={onReturnToDiary} onRestart={onRestart} />;
   }
 
   return (
@@ -1306,16 +1323,19 @@ type CreditsPhase = "slide" | "creditRole" | "creditName" | "fade" | "finalPhoto
 interface EndingCreditsScreenProps {
   route: (typeof endingRoutes)[RouteEnding];
   routeEnding: RouteEnding;
+  canSkipCredits: boolean;
   mainAudioRef: RefObject<HTMLAudioElement | null>;
   endingAudioRef: RefObject<HTMLAudioElement | null>;
   onOpenGallery: () => void;
+  onReturnToDiary: () => void;
   onRestart: () => void;
 }
 
-function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef, onOpenGallery, onRestart }: EndingCreditsScreenProps) {
+function EndingCreditsScreen({ route, routeEnding, canSkipCredits, mainAudioRef, endingAudioRef, onOpenGallery, onReturnToDiary, onRestart }: EndingCreditsScreenProps) {
   const isFullEnding = routeEnding === "ending-3";
   const [slideIndex, setSlideIndex] = useState(0);
   const [phase, setPhase] = useState<CreditsPhase>("slide");
+  const [isSkippingCredits, setIsSkippingCredits] = useState(false);
   const finalPhoto = photoPages.find((page) => page.ending === route.albumEnding) ?? photoPages[0];
   const currentCredit = creditLines[slideIndex] ?? creditLines[creditLines.length - 1];
 
@@ -1330,6 +1350,37 @@ function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef,
       mainAudioRef.current.play().catch(() => undefined);
     }
     next();
+  }
+
+  function skipCreditsToDiary() {
+    if (isSkippingCredits) return;
+
+    setIsSkippingCredits(true);
+    const endingAudio = endingAudioRef.current;
+    const startVolume = endingAudio?.volume ?? 0;
+    const startedAt = performance.now();
+    const duration = 1500;
+
+    function fadeAudio(now: number) {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      if (endingAudio) {
+        endingAudio.volume = startVolume * (1 - progress);
+      }
+      if (progress < 1) {
+        window.requestAnimationFrame(fadeAudio);
+      }
+    }
+
+    window.requestAnimationFrame(fadeAudio);
+    window.setTimeout(() => {
+      endingAudioRef.current?.pause();
+      endingAudioRef.current = null;
+      if (mainAudioRef.current) {
+        mainAudioRef.current.volume = BGM_VOLUME;
+        mainAudioRef.current.play().catch(() => undefined);
+      }
+      onReturnToDiary();
+    }, duration);
   }
 
   useEffect(() => {
@@ -1372,6 +1423,19 @@ function EndingCreditsScreen({ route, routeEnding, mainAudioRef, endingAudioRef,
     <section className="ending-credits-screen">
       <div className="credits-orange-reveal" aria-hidden="true" />
       <div className="ending-credits-glow" aria-hidden="true" />
+      {canSkipCredits && (
+        <button
+          className="credits-skip-button"
+          type="button"
+          onClick={skipCreditsToDiary}
+          disabled={isSkippingCredits}
+          aria-label="跳過片尾"
+        >
+          <SkipForward size={20} />
+          Skip
+        </button>
+      )}
+      {isSkippingCredits && <div className="credits-skip-fade" aria-hidden="true" />}
       {phase === "final" && (
         <div className="ending-fireworks" aria-hidden="true">
           <span />

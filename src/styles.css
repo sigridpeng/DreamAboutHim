@@ -2161,6 +2161,50 @@ p {
   position: absolute;
 }
 
+.credits-skip-button {
+  align-items: center;
+  background: rgba(15, 25, 58, 0.74);
+  border: 1px solid rgba(224, 178, 104, 0.72);
+  border-radius: 999px;
+  color: #fff1cf;
+  display: inline-flex;
+  font-family: Georgia, "Noto Serif TC", "PMingLiU", serif;
+  font-size: 24px;
+  gap: 10px;
+  height: 58px;
+  justify-content: center;
+  letter-spacing: 0;
+  min-width: 132px;
+  padding: 0 24px;
+  position: absolute;
+  right: 42px;
+  top: 38px;
+  z-index: 12;
+}
+
+.credits-skip-button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.credits-skip-fade {
+  animation: creditsSkipFade 1500ms ease forwards;
+  background: #02030a;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 30;
+}
+
+.diary-return-fade {
+  animation: diaryReturnReveal 1500ms ease forwards;
+  background: #02030a;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 80;
+}
+
 .ending-fireworks {
   inset: 0;
   overflow: hidden;
@@ -2670,6 +2714,24 @@ p {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes creditsSkipFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes diaryReturnReveal {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
